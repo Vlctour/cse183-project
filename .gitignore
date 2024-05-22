@@ -1,4 +1,5 @@
-*.pyc
-__pycache__/*
-databases/*
-!databases/README.md
+/apps/bird_watch/*.pyc
+/apps/__pycache__/*
+/apps/bird_watch/__pycache__/*
+/apps/bird_watch/databases/*
+/apps/bird_watch/!databases/README.md
