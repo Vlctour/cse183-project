@@ -46,3 +46,27 @@ def index():
 def my_callback():
     # The return value should be a dictionary that will be sent as JSON.
     return dict(my_value=3)
+
+@action('checklist')
+@action.uses('checklist.html', db, auth, url_signer)
+def checklist():
+    return dict(
+        # COMPLETE: return here any signed URLs you need.
+        my_callback_url = URL('my_callback', signer=url_signer),
+    )
+
+@action('location')
+@action.uses('location.html', db, auth, url_signer)
+def checklist():
+    return dict(
+        # COMPLETE: return here any signed URLs you need.
+        my_callback_url = URL('my_callback', signer=url_signer),
+    )
+
+@action('stats')
+@action.uses('stats.html', db, auth, url_signer)
+def checklist():
+    return dict(
+        # COMPLETE: return here any signed URLs you need.
+        my_callback_url = URL('my_callback', signer=url_signer),
+    )
