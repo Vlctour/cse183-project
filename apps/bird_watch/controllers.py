@@ -57,15 +57,32 @@ def checklist():
 
 @action('location')
 @action.uses('location.html', db, auth, url_signer)
-def checklist():
+def location():
     return dict(
         # COMPLETE: return here any signed URLs you need.
         my_callback_url = URL('my_callback', signer=url_signer),
+        get_species_url = URL('get_species', signer=url_signer),
     )
+
+@action('get_species', method="GET")
+@action.uses(db, auth, url_signer)
+def get_species():
+    top = request.params.get('top')
+    bottom = request.params.get('bottom')
+    left = request.params.get('left')
+    right = request.params.get('right')
+    species = db(
+        (db.checklists.latitude >= bottom) &
+        (db.checklists.latitude <= top) &
+        (db.checklists.longitude <= right) &
+        (db.checklists.longitude >= left)
+    ).select().as_list()
+    return dict(species=species)
+
 
 @action('stats')
 @action.uses('stats.html', db, auth, url_signer)
-def checklist():
+def stats():
     return dict(
         # COMPLETE: return here any signed URLs you need.
         my_callback_url = URL('my_callback', signer=url_signer),

@@ -10,6 +10,7 @@ app.data = {
         return {
             // Complete as you see fit.
             my_value: 1, // This is an example.
+            species: [],
             region: "North America",
             border_top: 49.00,
             border_down: 26.22,
@@ -31,8 +32,15 @@ app.data = {
 app.vue = Vue.createApp(app.data).mount("#app");
 
 app.load_data = function () {
-    axios.get(my_callback_url).then(function (r) {
-        app.vue.my_value = r.data.my_value;
+    axios.get(get_species_url, {
+        params: {
+            top: app.vue.border_top,
+            bottom: app.vue.border_down,
+            left: app.vue.border_left,
+            right: app.vue.border_right
+        }
+    }).then(function (r) {
+        app.vue.species = r.data.species;
     });
 }
 
