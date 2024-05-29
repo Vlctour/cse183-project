@@ -48,6 +48,7 @@ if db(db.species).isempty():
     filepath='/home/vlctor/cse183_project/apps/bird_watch/sample_data/species.csv'
     with open(filepath, 'r') as f:
         reader = csv.reader(f)
+        next(reader)
         for row in reader:
             db.species.insert(name=row[0])
 
@@ -55,6 +56,7 @@ if db(db.sightings).isempty():
     filepath='/home/vlctor/cse183_project/apps/bird_watch/sample_data/sightings.csv'
     with open(filepath, 'r') as f:
         reader = csv.reader(f)
+        next(reader)
         for row in reader:
             db.sightings.insert(event_id=row[0],
                                 name=row[1],
@@ -64,6 +66,7 @@ if db(db.checklists).isempty():
     filepath='/home/vlctor/cse183_project/apps/bird_watch/sample_data/checklists.csv'
     with open(filepath, 'r') as f:
         reader = csv.reader(f)
+        next(reader)
         for row in reader:
             db.checklists.insert(event_id=row[0],
                                 latitude=row[1],
