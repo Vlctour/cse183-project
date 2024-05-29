@@ -10,6 +10,13 @@ app.data = {
         return {
             // Complete as you see fit.
             my_value: 1, // This is an example.
+            region: "North America",
+            border_top: 49.00,
+            border_down: 26.22,
+            border_left: -126.16,
+            border_right: -71.50,
+            checklist_num: 5,
+            num_sightings: 50,
         };
     },
     methods: {
