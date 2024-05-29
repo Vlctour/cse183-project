@@ -57,7 +57,7 @@ def checklist():
 
 @action('location')
 @action.uses('location.html', db, auth, url_signer)
-def checklist():
+def location():
     return dict(
         # COMPLETE: return here any signed URLs you need.
         my_callback_url = URL('my_callback', signer=url_signer),
@@ -65,7 +65,7 @@ def checklist():
 
 @action('stats')
 @action.uses('stats.html', db, auth, url_signer)
-def checklist():
+def stats():
     return dict(
         # COMPLETE: return here any signed URLs you need.
         my_callback_url = URL('my_callback', signer=url_signer),
