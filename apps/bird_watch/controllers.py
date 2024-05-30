@@ -84,7 +84,7 @@ def get_species():
         (db.checklists.longitude <= right) &
         (db.checklists.longitude >= left) &
         (db.sightings.event_id == db.checklists.event_id)
-    ).select(db.sightings.name, distinct=True).as_list()
+    ).select(db.sightings.name, db.sightings.count.sum().with_alias("count"), groupby=db.sightings.name).as_list()
 
     sum = db.sightings.count.sum()
     num_sightings = db(

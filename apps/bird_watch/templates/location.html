@@ -15,7 +15,7 @@
     <!-- <h1 class="title"><i class="fa-solid fa-cube"></i> Title</h1>
     <p>Content: my_value: {{my_value}} </p> -->
     <div class="content">
-        <h1>{{region}}</h1>
+        <h1>Region: {{region}}</h1>
         <table class="table is-bordered">
             <tbody>
                 <tr>
@@ -27,9 +27,15 @@
     </div>
     <div class="list">
         <table class="table is-fullwidth is-hoverable is-striped">
+            <tr>
+                <th></th>
+                <th>Bird Species</th>
+                <th>Count</th>
+            </tr>
             <tr v-for="(bird, row) in selected_species" :key="row">
                 <th>{{(page_number - 1) * items_per_page + row + 1}}</th>
-                <td>{{bird.name}}</td>
+                <td>{{bird.sightings.name}}</td>
+                <td>{{bird.count}}</td>
             </tr>
         </table>
         <nav class="pagination is-right is-rounded is-small" role="navigation" aria-label="pagination">
@@ -52,7 +58,7 @@
                 <a href="#" class="pagination-next">Next page</a> -->
             </ul>
         </nav>
-        <div>page num {{page_number}}</div>
+        <div>developer notes: page num {{page_number}}</div>
     </div>
     <div class="graph">
         <h1>{Graphs}</h1>
