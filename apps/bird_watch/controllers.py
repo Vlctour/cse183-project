@@ -71,12 +71,21 @@ def get_species():
     bottom = request.params.get('bottom')
     left = request.params.get('left')
     right = request.params.get('right')
-    species = db(
+    checklist_num = db(
         (db.checklists.latitude >= bottom) &
         (db.checklists.latitude <= top) &
         (db.checklists.longitude <= right) &
         (db.checklists.longitude >= left)
-    ).select().as_list()
+    ).count()
+
+    species = db(
+        (db.checklists.latitude >= bottom) &
+        (db.checklists.latitude <= top) &
+        (db.checklists.longitude <= right) &
+        (db.checklists.longitude >= left) &
+        (db.sightings.event_id == db.checklists.event_id)
+    ).select(db.sightings.name, distinct=True).as_list()
+
     sum = db.sightings.count.sum()
     num_sightings = db(
         (db.checklists.latitude >= bottom) &
@@ -85,7 +94,6 @@ def get_species():
         (db.checklists.longitude >= left) &
         (db.sightings.event_id == db.checklists.event_id)
     ).select(sum).first()[sum]
-    checklist_num = len(species)
     return dict(species=species,
                 checklist_num=checklist_num,
                 num_sightings=num_sightings)
