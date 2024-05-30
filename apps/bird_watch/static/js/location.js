@@ -11,12 +11,12 @@ app.data = {
             // Complete as you see fit.
             my_value: 1, // This is an example.
             species: [],
-            region: "North America",
-            border_top: 49.00,
-            border_down: 26.22,
-            border_left: -126.16,
-            border_right: -71.50,
-            checklist_num: 5,
+            region: "California",
+            border_top: 42.00,
+            border_down: 32.50,
+            border_left: -124.4,
+            border_right: -114.1,
+            checklist_num: NaN,
             num_sightings: 50,
         };
     },
@@ -41,6 +41,8 @@ app.load_data = function () {
         }
     }).then(function (r) {
         app.vue.species = r.data.species;
+        app.vue.checklist_num = r.data.checklist_num;
+        app.vue.num_sightings = r.data.num_sightings;
     });
 }
 
