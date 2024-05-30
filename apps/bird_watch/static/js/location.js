@@ -8,16 +8,18 @@ let app = {};
 app.data = {    
     data: function() {
         return {
-            // Complete as you see fit.
-            my_value: 1, // This is an example.
             species: [],
             region: "California",
             border_top: 42.00,
             border_down: 32.50,
             border_left: -124.4,
             border_right: -114.1,
-            checklist_num: NaN,
-            num_sightings: 50,
+            checklist_num: null,
+            num_sightings: null,
+            selected_species: [],
+            page_number: 1,
+            first_page: true,
+            last_page: false,
         };
     },
     methods: {
@@ -26,6 +28,25 @@ app.data = {
             // This is an example.
             this.my_value += 1;
         },
+        update_page: function(val) {
+            let last_page = 5 // figure this out later
+            if ((this.page_number == 1 && val == -1) || (this.page_number == last_page && val == 1)) {
+                return
+            }
+            this.page_number += val
+
+            // figure out logic if there is only enough
+            // data to fill 1 page
+            if (this.page_number != 1 || this.page_number != last_page) {
+                this.first_page = this.last_page = false
+            }
+            if (this.page_number == 1) {
+                this.first_page = true
+            }
+            if (this.page_number == last_page) {
+                this.last_page = true
+            }
+        }
     }
 };
 

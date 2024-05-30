@@ -4,6 +4,9 @@
 [v-cloak] {
     display: none;
 }
+.test {
+    table-row-hover-background-color: blue
+}
 </style>
 
 
@@ -21,6 +24,31 @@
                 </tr>
             </tbody>
         </table>
+    </div>
+    <div class="list">
+        <table class="table is-fullwidth is-hoverable is-striped test">
+            <tr>
+                <th>{{"1"}}</th>
+                <td>{{"name"}}</td>
+            </tr>
+            <tr>
+                <th>{{"1"}}</th>
+                <td>{{"name"}}</td>
+            </tr>
+            <tr>
+                <th>{{"1"}}</th>
+                <td>{{"name"}}</td>
+            </tr>
+        </table>
+        <nav class="pagination is-right is-rounded is-small" role="navigation" aria-label="pagination">
+            <ul class="pagination-list">
+                <button class="button pagination-previous" @click="update_page(-1)">Previous</button>
+                <button class="button pagination-next" @click="update_page(1)">Next</button>
+                <!-- <a href="#" class="pagination-previous">Previous</a>
+                <a href="#" class="pagination-next">Next page</a> -->
+            </ul>
+        </nav>
+        <div>page num {{page_number}}</div>
     </div>
     <div class="graph">
         <h1>{Graphs}</h1>
