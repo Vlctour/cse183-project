@@ -71,29 +71,53 @@ def get_species():
     bottom = request.params.get('bottom')
     left = request.params.get('left')
     right = request.params.get('right')
-    checklist_num = db(
-        (db.checklists.latitude >= bottom) &
+    bounds_query = ((db.checklists.latitude >= bottom) &
         (db.checklists.latitude <= top) &
         (db.checklists.longitude <= right) &
-        (db.checklists.longitude >= left)
-    ).count()
+        (db.checklists.longitude >= left))
+    
+    # query 1
+    checklist_num = db(bounds_query).count()
 
-    species = db(
-        (db.checklists.latitude >= bottom) &
-        (db.checklists.latitude <= top) &
-        (db.checklists.longitude <= right) &
-        (db.checklists.longitude >= left) &
+    # query 2
+    species = db(bounds_query & 
         (db.sightings.event_id == db.checklists.event_id)
-    ).select(db.sightings.name, db.sightings.count.sum().with_alias("count"), groupby=db.sightings.name).as_list()
+    ).select(
+        db.sightings.name, 
+        db.sightings.count.sum().with_alias("count"), 
+        groupby=db.sightings.name
+    ).as_list()
 
+    # Handle rows where count is "X"
+    x_species = db(bounds_query & 
+        (db.sightings.event_id == db.checklists.event_id) &
+        (db.sightings.count == "X")
+    ).select(
+        db.sightings.name, 
+        db.sightings.count.count().with_alias("count"),
+        groupby=db.sightings.name
+    ).as_list()
+
+    for i in x_species:
+        i['count'] = "X"
+        species.append(i)
+    
+    # query 3
     sum = db.sightings.count.sum()
     num_sightings = db(
-        (db.checklists.latitude >= bottom) &
-        (db.checklists.latitude <= top) &
-        (db.checklists.longitude <= right) &
-        (db.checklists.longitude >= left) &
+        bounds_query &
         (db.sightings.event_id == db.checklists.event_id)
     ).select(sum).first()[sum]
+
+    # query 4
+    top_contributors = db(bounds_query &
+        (db.sightings.event_id == db.checklists.event_id)
+    ).select(
+        db.checklists.observer_id,
+        db.checklists.duration.sum().with_alias("duration"),
+        groupby=db.checklists.observer_id,
+        orderby=db.sightings.count.sum()
+    )
     return dict(species=species,
                 checklist_num=checklist_num,
                 num_sightings=num_sightings)
