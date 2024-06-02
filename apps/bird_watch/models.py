@@ -45,7 +45,7 @@ db.define_table(
 )
 
 if db(db.species).isempty():
-    filepath='/home/vlctor/cse183_project/apps/bird_watch/sample_data/species.csv'
+    filepath='/Users/shaun/Desktop/CSE 183/cse183-project/apps/bird_watch/sample_data/species.csv'
     with open(filepath, 'r') as f:
         reader = csv.reader(f)
         next(reader)
@@ -53,7 +53,7 @@ if db(db.species).isempty():
             db.species.insert(name=row[0])
 
 if db(db.sightings).isempty():
-    filepath='/home/vlctor/cse183_project/apps/bird_watch/sample_data/sightings.csv'
+    filepath='/Users/shaun/Desktop/CSE 183/cse183-project/apps/bird_watch/sample_data/sightings.csv'
     with open(filepath, 'r') as f:
         reader = csv.reader(f)
         next(reader)
@@ -63,7 +63,7 @@ if db(db.sightings).isempty():
                                 count=row[2])
 
 if db(db.checklists).isempty():
-    filepath='/home/vlctor/cse183_project/apps/bird_watch/sample_data/checklists.csv'
+    filepath='/Users/shaun/Desktop/CSE 183/cse183-project/apps/bird_watch/sample_data/checklists.csv'
     with open(filepath, 'r') as f:
         reader = csv.reader(f)
         next(reader)
