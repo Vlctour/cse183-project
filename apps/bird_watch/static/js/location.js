@@ -16,9 +16,8 @@ app.data = {
             border_right: -114.1,
             checklist_num: null,
             num_sightings: null,
-            test_species: ["a", "b", "c", "d", "e",
-                                "f", "g", "h", "i", "j"],
             selected_species: [],
+            top_contributors: [],
             page_number: 1,
             items_per_page: 10,
             first_page: true,
@@ -73,11 +72,12 @@ app.load_data = function () {
         }
     }).then(function (r) {
         app.vue.species = r.data.species;
+        app.vue.top_contributors = r.data.top_contributors
         app.vue.checklist_num = r.data.checklist_num;
         app.vue.num_sightings = r.data.num_sightings;
         app.vue.total_items = r.data.species.length;
         app.vue.total_pages = Math.ceil(app.vue.total_items / app.vue.items_per_page);
-
+        // console.log(r.data.test_contributers)
         const start = (app.vue.page_number - 1) * app.vue.items_per_page
         const end = app.vue.page_number * app.vue.items_per_page
         app.vue.selected_species = app.vue.species.slice(start,end)

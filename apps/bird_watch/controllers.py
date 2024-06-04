@@ -110,17 +110,42 @@ def get_species():
     ).select(sum).first()[sum]
 
     # query 4
+    number_of_contributors = 5
     top_contributors = db(bounds_query &
         (db.sightings.event_id == db.checklists.event_id)
     ).select(
-        db.checklists.observer_id,
+        db.checklists.observer_id.with_alias("observer_id"),
         db.checklists.duration.sum().with_alias("duration"),
+        db.sightings.count.count().with_alias("count"),
         groupby=db.checklists.observer_id,
-        orderby=db.sightings.count.sum()
+        orderby=~db.sightings.count.count(),
+        limitby=(0, number_of_contributors),
     )
+
+    top_contributor_ids = [(o.observer_id, o.count) for o in top_contributors]
+    best_contributors = {}
+    index = 0
+    for contributor, count in top_contributor_ids:
+        row = db(db.checklists.observer_id == contributor
+        ).select(
+            db.checklists.duration.sum().with_alias("duration")
+        )
+        best_contributors[index] = dict(
+            observer_id=contributor, 
+            count=count, 
+            duration=row[0].duration
+        )
+        index += 1
+    
+    # ------------------------------
+
+    # select observer_id, sum(duration) from checklists group by observer_id;
+    # select c.observer_id, count(s.count) from checklists c, sightings s where s.event_id = c.event_id group by c.observer_id order by count(s.count) asc;
+    # ---------------------------------------------------
     return dict(species=species,
                 checklist_num=checklist_num,
-                num_sightings=num_sightings)
+                num_sightings=num_sightings,
+                top_contributors=best_contributors)
 
 
 @action('stats')

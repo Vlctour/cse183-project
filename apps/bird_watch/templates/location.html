@@ -64,15 +64,17 @@
         <h1>{Graphs}</h1>
     </div>
     <div class="more-info">
-        <h1>{Top Contributers}</h1>
+        <h1 class="title">Top Contributers</h1>
         <table class="table is-fullwidth is-hoverable is-striped">
             <tr>
                 <th>Observer</th>
                 <th>Number of Bird Species observed</th>
                 <th>Total Time Spent Observing</th>
             </tr>
-            <tr>
-
+            <tr v-for="contributor in top_contributors">
+                <th>{{contributor.observer_id}}</th>
+                <td>{{contributor.count}}</td>
+                <td>{{contributor.duration}}</td>
             </tr>
         </table>
     </div>
