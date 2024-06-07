@@ -8,25 +8,44 @@ let app = {};
 app.data = {    
     data: function() {
         return {
-            // Complete as you see fit.
-            my_value: 1, // This is an example.
+            stats: [], 
+            map: null,
         };
     },
+    
     methods: {
-        // Complete as you see fit.
-        my_function: function() {
-            // This is an example.
-            this.my_value += 1;
-        },
-    }
+        back_button_clicked: function(item) {
+            // Implement your click handler logic here
+            alert('You clicked on ' + item.name);
+            // You can also use window.location.href to navigate to another page
+            // window.location.href = 'some_url_based_on_' + item.name;
+        }
+    },
+    mounted() {
+        // Initialize the Leaflet map here
+        this.map = L.map('map').setView([51.505, -0.09], 13);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(this.map);
+
+        // Add a marker for demonstration purposes
+        L.marker([51.5, -0.09]).addTo(this.map)
+            .bindPopup('Hi its me')
+            .openPopup();
+        
+    },
 };
+
 
 app.vue = Vue.createApp(app.data).mount("#app");
 
 app.load_data = function () {
-    axios.get(my_callback_url).then(function (r) {
-        app.vue.my_value = r.data.my_value;
+    console.log("start");
+    axios.get(get_stats_url).then(function (r) {
+        app.vue.stats = r.data.birds_seen;
     });
+    console.log("end");
 }
 
 app.load_data();

@@ -2,36 +2,57 @@
 
 <style>
 [v-cloak] {
-     display: none;
+    display: none;
 }
+#map { height: 750px; } /* Increase height for better visibility */
 </style>
 
-
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+crossorigin=""/>
 <div class="section" id="app" v-cloak>
   <!-- Put here your Vue.js template -->
-  <h1 class="title"><i class="fa-solid fa-cube"></i> Title</h1>
-  <p>Content: my_value: {{my_value}} </p>
-  <table class="table">
-    <thead>
-      <tr>
-        <th>Species</th>
-        <th>Times Seen</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>38</td>
-        <td>23</td>
-      </tr>
-    </tbody>
-  </table>
+  <h1 class="title"><i class="fa-solid fa-dove"></i> Stats</h1>
+  <div class="field has-addons">
+    <div class="control is-expanded">
+      <input class="input" type="text" placeholder="Search species">
+    </div>
+    <div class="control">
+      <button class="button is-primary">
+        Search
+      </button>
+    </div>
+  </div>
+  <div class="columns">
+    <div class="column is-one-quarters">
+      <div class="table-container">
+        <table class="table is-hoverable is-bordered is-striped">
+          <thead>
+            <tr>
+              <th>Species</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="item in stats" :key="item.name" class="is-clickable" @click="back_button_clicked(item)">
+              <td>{{ item.name }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div id="map"></div>
+  </div>
 </div>
-
 
 [[block page_scripts]]
 <!-- Loads the index-specific js for Vue -->
 <script>
   let my_callback_url = "[[=XML(my_callback_url)]]";
+  let get_stats_url = "[[=XML(get_stats_url)]]";
 </script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+     crossorigin=""></script>
 <script src="js/stats.js"></script>
+<script src="js/leaflet-heat.js"></script>
 [[end]]

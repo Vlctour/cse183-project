@@ -67,6 +67,25 @@ def location():
 @action.uses('stats.html', db, auth, url_signer)
 def stats():
     return dict(
-        # COMPLETE: return here any signed URLs you need.
         my_callback_url = URL('my_callback', signer=url_signer),
+        get_stats_url = URL('get_stats', signer=url_signer)
     )
+
+
+@action('get_stats', method="GET")
+@action.uses(db, auth, url_signer)
+def get_stats():
+    observer_id = 'obs1644106'
+        
+    query = (db.sightings.event_id == db.checklists.event_id) & (db.checklists.observer_id == observer_id)
+    rows = db(query).select(
+        db.sightings.name,
+        db.sightings.count,
+        orderby=~db.sightings.count
+    )
+
+    # Format the result into a list of dictionaries
+    result = [{'name': row.name, 'times_seen': row.count} for row in rows]
+
+    print(result)
+    return dict(birds_seen=result)
