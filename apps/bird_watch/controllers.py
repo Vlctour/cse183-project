@@ -75,17 +75,30 @@ def stats():
 @action('get_stats', method="GET")
 @action.uses(db, auth, url_signer)
 def get_stats():
-    observer_id = 'obs1644106'
+
+    observer_id = request.params.get('observer_id')
+    sort_most_recent = request.params.get('sort_most_recent')
+
+    print(observer_id,sort_most_recent)
         
     query = (db.sightings.event_id == db.checklists.event_id) & (db.checklists.observer_id == observer_id)
+
+
+    if sort_most_recent == 'true':
+        orderby = [~db.checklists.date, ~db.checklists.time]
+    else:
+        orderby = [db.checklists.date, db.checklists.time]
+
+    # Fetch the rows from the database
     rows = db(query).select(
+        db.checklists.event_id,
         db.sightings.name,
         db.sightings.count,
-        orderby=~db.sightings.count
-    )
+        db.checklists.date,
+        db.checklists.time,
+        orderby=orderby
+    ).as_list()
 
-    # Format the result into a list of dictionaries
-    result = [{'name': row.name, 'times_seen': row.count} for row in rows]
-
-    print(result)
-    return dict(birds_seen=result)
+    print(rows)
+    size = len(rows)
+    return dict(birds_seen=rows, size=size)
