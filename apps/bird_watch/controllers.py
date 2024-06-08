@@ -62,6 +62,8 @@ def location():
         # COMPLETE: return here any signed URLs you need.
         my_callback_url = URL('my_callback', signer=url_signer),
         get_species_url = URL('get_species', signer=url_signer),
+        get_radar_data_url = URL('get_radar_data', signer=url_signer),
+        display_location_data_url = URL('display_location_data', signer=url_signer)
     )
 
 @action('get_species', method="GET")
@@ -83,9 +85,11 @@ def get_species():
     species = db(bounds_query & 
         (db.sightings.event_id == db.checklists.event_id)
     ).select(
+        db.sightings.id,
         db.sightings.name, 
         db.sightings.count.sum().with_alias("count"), 
-        groupby=db.sightings.name
+        groupby=db.sightings.name,
+        orderby=~db.sightings.count.sum(),
     ).as_list()
 
     # Handle rows where count is "X"
@@ -110,7 +114,7 @@ def get_species():
     ).select(sum).first()[sum]
 
     # query 4
-    number_of_contributors = 5
+    number_of_contributors = 7
     top_contributors = db(bounds_query &
         (db.sightings.event_id == db.checklists.event_id)
     ).select(
@@ -147,6 +151,62 @@ def get_species():
                 num_sightings=num_sightings,
                 top_contributors=best_contributors)
 
+@action('get_radar_data', method="GET")
+@action.uses(db, auth, url_signer)
+def get_radar_data():
+    top = request.params.get('top')
+    bottom = request.params.get('bottom')
+    left = request.params.get('left')
+    right = request.params.get('right')
+    bird_name = request.params.get('name')
+    bounds_query = ((db.checklists.latitude >= bottom) &
+        (db.checklists.latitude <= top) &
+        (db.checklists.longitude <= right) &
+        (db.checklists.longitude >= left))
+
+    query = (
+        (db.checklists.event_id == db.sightings.event_id) #&
+        # (db.sightings.name == bird_name)
+    )
+
+    rows = db(bounds_query & query).select(
+        db.checklists.date,
+        db.sightings.count.sum().with_alias("count"),
+        orderby=db.checklists.date,
+        groupby=db.checklists.date,
+    )
+
+    radar_data = [{'date': row.checklists.date, 'count': row.count} for row in rows]
+    return dict(radar_data=radar_data)
+
+@action('display_location_data', method="GET")
+@action.uses(db, auth, url_signer)
+def display_location_data():
+    bird_name = request.params.get("bird_name")
+    top = request.params.get('top')
+    bottom = request.params.get('bottom')
+    left = request.params.get('left')
+    right = request.params.get('right')
+    bounds_query = ((db.checklists.latitude >= bottom) &
+        (db.checklists.latitude <= top) &
+        (db.checklists.longitude <= right) &
+        (db.checklists.longitude >= left))
+
+    query = (
+        (db.sightings.event_id == db.checklists.event_id) &
+        (db.sightings.name == bird_name)
+    )
+
+    bird_data = db(query).select(
+        db.checklists.date,
+        db.sightings.count.sum().with_alias("count"),
+        orderby=db.checklists.date,
+        groupby=db.checklists.date,
+    ).as_list()
+    return dict(
+        bird_name=bird_name,
+        bird_data=bird_data
+    )
 
 @action('stats')
 @action.uses('stats.html', db, auth, url_signer)
