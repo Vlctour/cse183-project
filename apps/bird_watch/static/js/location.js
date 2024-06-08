@@ -56,6 +56,81 @@ app.data = {
             const end = this.page_number * this.items_per_page
             // console.log(start, end)
             this.selected_species = this.species.slice(start,end)
+        },
+        drawSightingsChart: function() {
+            let ctx = document.getElementById('sightings_chart').getContext('2d');
+            let speciesNames = [];
+            let speciesCounts = [];
+            
+            for (let i = 0; i < this.species.length; i++) {
+                let bird = this.species[i];
+                if (bird.count !== "X") {
+                    speciesNames.push(bird.sightings.name);
+                    speciesCounts.push(parseInt(bird.count));
+                }
+            }
+    
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: speciesNames,
+                    datasets: [{
+                        label: 'Sightings',
+                        data: speciesCounts,
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        },
+        drawContributorsChart: function() {
+            let ctx = document.getElementById('contributors_chart').getContext('2d');
+            let observerIds = [];
+            let durations = [];
+    
+            for (let key in this.top_contributors) {
+                let contributor = this.top_contributors[key];
+                observerIds.push(contributor.observer_id);
+                durations.push(contributor.duration);
+            }
+    
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: observerIds,
+                    datasets: [{
+                        label: 'Observation Time',
+                        data: durations,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(153, 102, 255, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true
+                }
+            });
         }
     }
 };
@@ -82,6 +157,8 @@ app.load_data = function () {
         const end = app.vue.page_number * app.vue.items_per_page
         app.vue.selected_species = app.vue.species.slice(start,end)
 
+        app.vue.drawSightingsChart();
+        app.vue.drawContributorsChart();
     });
 }
 
