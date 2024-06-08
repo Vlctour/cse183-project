@@ -69,7 +69,8 @@ def stats():
     return dict(
         my_callback_url = URL('my_callback', signer=url_signer),
         get_stats_url = URL('get_stats', signer=url_signer),
-        get_card_data_url = URL('get_card_data', signer=url_signer)
+        get_card_data_url = URL('get_card_data', signer=url_signer),
+        display_data_url = URL('display_data', signer=url_signer)
     )
 
 
@@ -95,28 +96,17 @@ def get_stats():
         orderby = db.checklists.date.min()
         show = db.checklists.date.min().with_alias("date")
 
-
-    # print("sorted state", sort_most_recent)
     # Fetch the rows from the database
     rows = db(query).select(
         db.sightings.id, # needs aggregate
         db.checklists.event_id, # needs aggregate
         db.sightings.name,
-        db.sightings.count.count().with_alias("count"),
+        db.sightings.count.sum().with_alias("count"),
         show,
         groupby=db.sightings.name,
         orderby=orderby
     ).as_list()
-    # rows = db(query).select(
-    #     db.sightings.id,
-    #     db.checklists.event_id,
-    #     db.sightings.name,
-    #     db.sightings.count,
-    #     db.checklists.date,
-    #     db.checklists.time,
-    #     orderby=orderby
-    # ).as_list()
-    # print("data: ",rows)
+
     size = len(rows)
     return dict(birds_seen=rows, size=size)
 
@@ -147,4 +137,26 @@ def get_card_data():
         total_bird_count=total_bird_count,
         hour=hour,
         minutes=minutes
+    )
+
+@action('display_data', method="GET")
+@action.uses(db, auth, url_signer)
+def display_data():
+    observer_id = request.params.get('observer_id')
+    bird_name = request.params.get("bird_name")
+
+    query = (
+        (db.sightings.event_id == db.checklists.event_id) &
+        (db.checklists.observer_id == observer_id) &
+        (db.sightings.name == bird_name)
+    )
+
+    bird_data = db(query).select(
+        db.checklists.date,
+        db.sightings.count,
+        orderby=db.checklists.date
+    ).as_list()
+    return dict(
+        bird_name=bird_name,
+        bird_data=bird_data
     )

@@ -41,10 +41,12 @@
         </tr>
         <tr v-for="(bird, row) in selected_stats" :key="row">
           <th>{{(page_number - 1) * items_per_page + row + 1}}</th>
-          <td class="is-clickable" @click="display_data(bird.sightings.id)">{{bird.sightings.name}}</td>
+          <td v-if="!chart_loading" class="is-clickable" @click="display_data(bird.sightings.id)">{{bird.sightings.name}}</td>
+          <td v-else>
+            <i class="button is-loading is-small"></i>
+          </td>
           <td>{{bird.count}}</td>
           <td>{{bird.date}}</td>
-
         </tr>
       </table>
       <nav class="pagination is-right is-rounded is-small" role="navigation" aria-label="pagination">
@@ -87,32 +89,34 @@
       </div>
       <div class="card mt-2">
         <div class="card-content">
-          <div class="container is-align-items-center">
+          <!-- <div class="container is-align-items-center"> -->
             <div class="columns">
               <div class="column is-one-third has-text-centered">
-                <h1>Species Observed</h1>
+                <h1 class="header">Species Observed</h1>
                 <p>{{unique_bird_count}}</p>
               </div>
-              <div class="column is-one-third has-text-centered ml-6">
-                <h1>Number of Birds Seen</h1>
+              <div class="column is-one-third has-text-centered">
+                <h1 class="header">Number of Birds Seen</h1>
                 <p>{{total_bird_count}}</p>
               </div>
-              <div class="column is-one-third has-text-centered ml-12">
-                <h1>Time Observed</h1>
-                <p>{{hours}}:{{minutes}}:00</p
+              <div class="column is-one-third has-text-centered">
+                <h1 class="header">Time Observed</h1>
+                <p>{{hours}}:{{minutes}}:00</p>
               </div>
             </div>
-          </div>
-          
-          </div>
+          <!-- </div> -->
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-content">
+          <canvas id="birdChart"></canvas>
         </div>
       </div>
     </div>
   </div>
-  <div class="card">
+  <!-- <div class="card">
     <div id="map"></div>
-  </div>
-
+  </div> -->
 </div>
 
 [[block page_scripts]]
@@ -121,10 +125,13 @@
   let my_callback_url = "[[=XML(my_callback_url)]]";
   let get_stats_url = "[[=XML(get_stats_url)]]";
   let get_card_data_url = "[[=XML(get_card_data_url)]]";
+  let display_data_url = "[[=XML(display_data_url)]]";
 </script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
         crossorigin=""></script>
 <script src="js/stats.js"></script>
 <script src="js/leaflet-heat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 [[end]]
