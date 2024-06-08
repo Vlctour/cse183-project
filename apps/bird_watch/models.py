@@ -14,7 +14,10 @@ def get_user_email():
 def get_time():
     return datetime.datetime.utcnow()
 
-
+def convert_time(time):
+    hours = time//60
+    minutes = time % 60
+    return hours, minutes
 ### Define your table below
 #
 # db.define_table('thing', Field('name'))
@@ -40,7 +43,7 @@ db.define_table(
     Field('longitude', 'float'),
     Field('date', 'date'),
     Field('time', 'time'),
-    Field('observer_id', 'string'), # maybe reference from another table
+    Field('observer_id', 'string'), 
     Field('duration', 'float'),
 )
 

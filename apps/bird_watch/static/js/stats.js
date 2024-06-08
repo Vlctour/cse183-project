@@ -19,10 +19,24 @@ app.data = {
             total_pages: null,
             sort_most_recent: true,
             is_loading: false,
+            search_query: null,
+            unique_bird_count: 0,
+            total_bird_count: 0,
+            hours: 0,
+            minutes: 0,
         };
     },
     
     methods: {
+        find_item_idx: function(id) {
+            // return this.shopping_list.findIndex(item => item.id === id)
+            for (let i = 0; i < this.selected_stats.length; i++) {
+                if(this.selected_stats[i].sightings.id === id) {
+                    return i
+                }
+            }
+            return null
+        },
         update_page: function(val) {
             let last_page = this.total_pages // figure this out later
             if ((this.page_number == 1 && val == -1) || (this.page_number >= last_page && val == 1)) {
@@ -30,8 +44,7 @@ app.data = {
             }
             this.page_number += val
 
-            // figure out logic if there is only enough
-            // data to fill 1 page
+
             if (this.page_number != 1 || this.page_number != last_page) {
                 this.first_page = this.last_page = false
             }
@@ -49,10 +62,23 @@ app.data = {
             this.selected_stats = this.stats.slice(start,end)
         },
         update_sort_by: function() {
+            this.sort_most_recent = !this.sort_most_recent
             this.is_loading = true
             app.load_data()
-            this.sort_most_recent = !this.sort_most_recent
         },
+        search_table: function(query) {
+            app.load_data();
+            app.vue.search_query = null;
+            app.vue.page_number = 1;
+            app.vue.items_per_page = 10;
+            app.vue.first_page = true;
+            app.vue.last_page = false;
+        },
+        display_data: function(item_id) {
+            let self = this
+            let i = self.find_item_idx(item_id)
+
+        }
 
     },
 
@@ -79,7 +105,8 @@ app.load_data = function () {
     axios.get(get_stats_url, {
         params: {
             observer_id: 'obs1644106',
-            sort_most_recent: app.vue.sort_most_recent
+            sort_most_recent: app.vue.sort_most_recent,
+            search_query: app.vue.search_query,
         }
     }).then(function (r) {
         app.vue.stats = r.data.birds_seen;
@@ -92,5 +119,20 @@ app.load_data = function () {
     });
 }
 
-app.load_data();
+app.load_card_data = function () {
+    axios.get(get_card_data_url, {
+        params: {
+            observer_id: 'obs1644106'
+        }
+    }).then(function (r) {
+        app.vue.unique_bird_count = r.data.unique_bird_count
+        app.vue.total_bird_count = r.data.total_bird_count
+        app.vue.hours = r.data.hour
+        app.vue.minutes = r.data.minutes
+    });
+}
 
+app.load_data();
+app.load_card_data();
+
+console.log(app.vue.unique_bird_count);
