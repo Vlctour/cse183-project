@@ -29,7 +29,7 @@ from py4web import action, request, abort, redirect, URL
 from yatl.helpers import A
 from .common import db, session, T, cache, auth, logger, authenticated, unauthenticated, flash
 from py4web.utils.url_signer import URLSigner
-from .models import get_user_email
+from .models import get_user_email, convert_time
 
 url_signer = URLSigner(session)
 
@@ -67,6 +67,96 @@ def location():
 @action.uses('stats.html', db, auth, url_signer)
 def stats():
     return dict(
-        # COMPLETE: return here any signed URLs you need.
         my_callback_url = URL('my_callback', signer=url_signer),
+        get_stats_url = URL('get_stats', signer=url_signer),
+        get_card_data_url = URL('get_card_data', signer=url_signer),
+        display_data_url = URL('display_data', signer=url_signer)
+    )
+
+
+@action('get_stats', method="GET")
+@action.uses(db, auth, url_signer)
+def get_stats():
+
+    observer_id = request.params.get('observer_id')
+    sort_most_recent = request.params.get('sort_most_recent')
+    search_query = request.params.get('search_query')
+
+    print(observer_id,sort_most_recent)
+        
+    query = (db.sightings.event_id == db.checklists.event_id) & (db.checklists.observer_id == observer_id)
+
+    if search_query:
+        query &= (db.sightings.name.contains(search_query))
+   
+    if sort_most_recent == 'true':
+        orderby = ~db.checklists.date.max()
+        show = db.checklists.date.max().with_alias("date")
+    else:
+        orderby = db.checklists.date.min()
+        show = db.checklists.date.min().with_alias("date")
+
+    # Fetch the rows from the database
+    rows = db(query).select(
+        db.sightings.id, # needs aggregate
+        db.checklists.event_id, # needs aggregate
+        db.sightings.name,
+        db.sightings.count.sum().with_alias("count"),
+        show,
+        groupby=db.sightings.name,
+        orderby=orderby
+    ).as_list()
+
+    size = len(rows)
+    return dict(birds_seen=rows, size=size)
+
+@action('get_card_data', method="GET")
+@action.uses(db, auth, url_signer)
+def get_card_data():
+    observer_id = request.params.get('observer_id')
+
+    # Fetch unique bird species
+    query = (db.sightings.event_id == db.checklists.event_id) & (db.checklists.observer_id == observer_id)
+    unique_birds = db(query).select(
+        db.sightings.name,
+        distinct=True,
+    ).as_list()
+
+    # Fetch total number of birds seen
+    sum = db.sightings.count.sum()
+    total_bird_count = db(query).select(sum).first()[sum]
+
+    # Total amount of time user spent observing
+    sum2 = db.checklists.duration.sum()
+    total_time = db(db.checklists.observer_id == observer_id).select(sum2).first()[sum2]
+    hour, minutes = convert_time(total_time)
+
+    unique_bird_count = len(unique_birds)
+    return dict(
+        unique_bird_count=unique_bird_count,
+        total_bird_count=total_bird_count,
+        hour=hour,
+        minutes=minutes
+    )
+
+@action('display_data', method="GET")
+@action.uses(db, auth, url_signer)
+def display_data():
+    observer_id = request.params.get('observer_id')
+    bird_name = request.params.get("bird_name")
+
+    query = (
+        (db.sightings.event_id == db.checklists.event_id) &
+        (db.checklists.observer_id == observer_id) &
+        (db.sightings.name == bird_name)
+    )
+
+    bird_data = db(query).select(
+        db.checklists.date,
+        db.sightings.count,
+        orderby=db.checklists.date
+    ).as_list()
+    return dict(
+        bird_name=bird_name,
+        bird_data=bird_data
     )
