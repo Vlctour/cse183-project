@@ -8,8 +8,7 @@ let app = {};
 app.data = {    
     data: function() {
         return {
-            // Complete as you see fit.
-            my_value: 1, // This is an example.
+            showModal: show_modal,
         };
     },
     methods: {
@@ -17,6 +16,12 @@ app.data = {
         my_function: function() {
             // This is an example.
             return
+        },
+        openModal: function() {
+            this.showModal = true;
+        },
+        closeModal: function() {
+            this.showModal = false;
         },
     }
 };

@@ -44,10 +44,17 @@ app.data = {
         closeModal: function() {
             this.showModal = false;
         },
-        // get_sighting_url: function(event_id) {
-        //     // return `checklist/sightings?event_id=${event_id}`;
-        //     return `/checklist/sightings/${event_id}`
-        // },
+        handle_redirect: function(event_id) {
+            // return `checklist/sightings?event_id=${event_id}`;
+            axios.get(handle_redirect_url, {
+                params: {
+                    event_id: event_id
+                }
+            }).then(function (r) {
+                window.location.href = r.data.url; 
+            });
+            // return `/checklist/sightings/${event_id}`
+        },
         save_button: function() {
             if ((this.new_date === null) || (this.new_time === null) || (this.new_duration == null) || (this.new_latitude === null) || (this.new_longitude === null)) {
                 console.log("jello")

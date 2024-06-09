@@ -57,27 +57,51 @@ def checklist():
         # COMPLETE: return here any signed URLs you need.
         my_callback_url = URL('my_callback', signer=url_signer),
         get_checklist_url = URL('get_checklist', signer=url_signer),
-        delete_checklist_url = URL('delete_checklist', signer=url_signer)
+        delete_checklist_url = URL('delete_checklist', signer=url_signer),
+        handle_redirect_url = URL('handle_redirect', signer=url_signer),
     )
     
-
-@action('checklist/sightings/<path:path>', method=['POST', 'GET'])
-# @action('checklist/sightings/<event_id:event_id>', method=['POST', 'GET'])
-@action('checklist/sightings', method=['POST', 'GET'])
+# @action('checklist/sightings', method=['GET'])
+@action('checklist/sightings/<event_id>', method=['GET', 'POST'])
+@action('checklist/sightings/<event_id>/<path:path>', method=['GET', 'POST'])
 @action.uses('checklist_sightings.html', db, auth)
-def checklist_sightings(path=None):
+def checklist_sightings(event_id=None, path=None):
     query = (db.sightings.event_id > 0)
+    showModal = 'false'
+    if event_id is not None:
+        query &= (db.sightings.event_id == event_id)
+
+    # Create a form for adding a new sighting
+    form = Form(db.sightings, 
+                formstyle=FormStyleBulma, 
+                keep_values=True,
+                fields=[db.sightings.name, db.sightings.count],
+                hidden=dict(event_id=event_id))
+
+    if form.accepted:
+        # This block will be executed when the form is successfully submitted
+        db.sightings.insert(event_id=event_id, 
+                            name=form.vars['name'], 
+                            count=form.vars['count'])
+        redirect(URL('checklist/sightings', event_id))
+
+    if request.method == 'POST':
+        showModal = 'true'
+
     grid = Grid(path,
                 formstyle=FormStyleBulma,
                 columns=[db.sightings.event_id, db.sightings.name, db.sightings.count],
                 grid_class_style=GridClassStyleBulma,
                 query=query,
                 orderby=[db.sightings.id],
+                create=False,
                 details=False,
                 search_queries=[['Search by Species', lambda val: db.sightings.name.contains(val)]],
     )
     return dict(
         grid=grid,
+        form=form,
+        showModal=showModal
     )
 
 @action('get_checklist', method="GET")
@@ -99,6 +123,14 @@ def get_checklist():
 
     return dict(checklist=row, bird_count=bird_count_dict)
 
+
+@action('handle_redirect', method="GET")
+@action.uses(db, auth, url_signer)
+def handle_redirect():
+    event_id = request.params.get('event_id')
+    # url = URL("checklist/sightings/", vars=dict(event_id=event_id))
+    url = URL("checklist/sightings/" + event_id)
+    return dict(url=url)
 
 @action('delete_checklist', method="POST")
 @action.uses(db, auth, url_signer)

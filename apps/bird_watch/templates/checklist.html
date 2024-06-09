@@ -99,7 +99,7 @@
                 </thead>
                 <tbody>
                     <tr v-for="c in checklist" :key="c.id">
-                        <td class="is-clickable">
+                        <td class="is-clickable" @click="handle_redirect(c.event_id)">
                             {{c.event_id}}
                         </td>
                         <td class="is-clickable" @click="">{{bird_count[c.event_id]}}</td>
@@ -125,6 +125,7 @@
     let my_callback_url = "[[=XML(my_callback_url)]]";
     let get_checklist_url = "[[=XML(get_checklist_url)]]";
     let delete_checklist_url = "[[=XML(delete_checklist_url)]]"
+    let handle_redirect_url = "[[=XML(handle_redirect_url)]]"
 
 </script>
 <script src="js/checklist.js"></script>
