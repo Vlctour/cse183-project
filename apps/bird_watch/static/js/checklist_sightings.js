@@ -37,3 +37,9 @@ app.load_data = function () {
 
 app.load_data();
 
+document.addEventListener("DOMContentLoaded", function() {
+    const addButton = document.getElementById('addButton');
+    if (window.location.href.includes('/edit')) {
+        addButton.style.display = 'none';
+    }
+});

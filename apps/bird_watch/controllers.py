@@ -27,12 +27,13 @@ Warning: Fixtures MUST be declared with @action.uses({fixtures}) else your app w
 
 from py4web import action, request, abort, redirect, URL
 from yatl.helpers import A
-from .common import db, session, T, cache, auth, logger, authenticated, unauthenticated, flash
+from .common import db, session, T, cache, auth, logger, authenticated, unauthenticated, flash, Field
 from py4web.utils.url_signer import URLSigner
 from .models import get_user_email, convert_time
 from py4web.utils.form import Form
 from py4web.utils.form import FormStyleBulma, FormStyleDefault
 from py4web.utils.grid import Grid, GridClassStyleBulma, GridClassStyle
+from pydal.validators import *
 
 url_signer = URLSigner(session)
 
@@ -71,18 +72,20 @@ def checklist_sightings(event_id=None, path=None):
     if event_id is not None:
         query &= (db.sightings.event_id == event_id)
 
-    # Create a form for adding a new sighting
-    form = Form(db.sightings, 
-                formstyle=FormStyleBulma, 
-                keep_values=True,
-                fields=[db.sightings.name, db.sightings.count],
-                hidden=dict(event_id=event_id))
+    form = Form(
+        [
+            Field('name', requires=IS_NOT_EMPTY()),
+            Field('count', default="X"),
+        ],
+        formstyle=FormStyleBulma,
+    )
 
     if form.accepted:
-        # This block will be executed when the form is successfully submitted
-        db.sightings.insert(event_id=event_id, 
-                            name=form.vars['name'], 
-                            count=form.vars['count'])
+        db.sightings.insert(
+            event_id=event_id, 
+            name=form.vars['name'], 
+            count=form.vars['count']
+        )
         redirect(URL('checklist/sightings', event_id))
 
     if request.method == 'POST':

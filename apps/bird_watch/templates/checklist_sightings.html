@@ -9,7 +9,7 @@
 <!-- Include Bulma CSS -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.3/css/bulma.min.css">
 <div class="section" id="app" v-cloak>
-    <button class="button is-primary" @click="openModal()"><i class="fa-solid fa-plus"></i> New</button>
+    <button class="button is-primary" id="addButton" @click="openModal()"><i class="fa-solid fa-plus"></i>New</button>
     <div class="modal" :class="{'is-active': showModal}">
         <div class="modal-background"></div>
             <div class="modal-content">
@@ -21,7 +21,6 @@
         <button class="modal-close is-large" aria-label="close" @click="closeModal()"></button>
     </div>
     [[=grid]]
-    [[=showModal]]
 </div>
 
 [[block page_scripts]]
