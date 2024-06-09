@@ -4,21 +4,13 @@
 // and be used to initialize it.
 let app = {};
 
-
-app.data = {    
-    data: function() {
+app.data = {
+    data() {
         return {
-            // Complete as you see fit.
-            my_value: 1, // This is an example.
         };
     },
     methods: {
-        // Complete as you see fit.
-        my_function: function() {
-            // This is an example.
-            this.my_value += 1;
-        },
-    }
+    },
 };
 
 app.vue = Vue.createApp(app.data).mount("#app");
@@ -30,4 +22,3 @@ app.load_data = function () {
 }
 
 app.load_data();
-
