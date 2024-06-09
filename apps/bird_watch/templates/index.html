@@ -18,14 +18,36 @@
         crossorigin=""></script>
 
 <div class="section" id="app" v-cloak>
-    <h1 class="title"><i class="fa-solid fa-earth-americas"></i>Index</h1>
-    <a href="[[=URL('checklist')]]">Go to About Page</a>
-    <div id="map"></div>
+    <nav class="navbar" role="navigation" aria-label="main navigation">
+        <div class="columns">
+            <div class="column">
+                <div class="navbar-brand">
+                    <h1 class="title"><i class="fa-solid fa-earth-americas"></i>Index</h1>
+                </div>
+            </div>
+            <div class="column">
+                <div id="navbarBasicExample" class="navbar-menu">
+                    <div class="navbar-start">
+                        <a class="navbar-item" @click="stats_redirect">Stats</a>
+                        <a class="navbar-item" @click="checklists_redirect">Checklists</a>
+                        <a class="navbar-item" @click="locations_redirect">Locations</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div class="card">
+        <div class="card-content">
+            <div id="map"></div>
+        </div>
+    </div>
 </div>
 
 [[block page_scripts]]
 <script>
     let my_callback_url = "[[=XML(my_callback_url)]]";
+    let handle_redirect_stats_url = "[[=XML(handle_redirect_stats_url)]]";
+    let handle_redirect_locations_url = "[[=XML(handle_redirect_locations_url)]]";
+    let handle_redirect_checklists_url = "[[=XML(handle_redirect_checklists_url)]]";
 
     document.addEventListener('DOMContentLoaded', function () {
         var map = L.map('map').setView([36.974117, -122.030792], 13);

@@ -10,6 +10,31 @@ app.data = {
         };
     },
     methods: {
+        stats_redirect: function() {
+            console.log("hello");
+            axios.get(handle_redirect_stats_url, {
+                params: {
+                    observer_id: 'obs1171407',
+                }
+            }).then(function(r){
+                window.location.href = r.data.url
+            });
+        },
+        checklists_redirect: function () {
+            axios.get(handle_redirect_checklists_url, {
+                params: {
+                    observer_id: 'obs1171407',
+                }
+            }).then(function(r){
+                window.location.href = r.data.url
+            });
+        },
+        locations_redirect: function () {
+            axios.get(handle_redirect_locations_url, {
+            }).then(function(r){
+                window.location.href = r.data.url
+            });
+        }
     },
 };
 

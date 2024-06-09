@@ -39,13 +39,43 @@ def index():
     return dict(
         # COMPLETE: return here any signed URLs you need.
         my_callback_url = URL('my_callback', signer=url_signer),
+        handle_redirect_stats_url = URL('handle_redirect_stats', signer=url_signer),
+        handle_redirect_locations_url = URL('handle_redirect_locations', signer=url_signer),
+        handle_redirect_checklists_url = URL('handle_redirect_checklists',  signer=url_signer),
     )
+
 
 @action('my_callback')
 @action.uses() # Add here things like db, auth, etc.
 def my_callback():
     # The return value should be a dictionary that will be sent as JSON.
     return dict(my_value=3)
+
+
+@action('handle_redirect_stats', method="GET")
+@action.uses(db, auth, url_signer)
+def handle_redirect_stats():
+    # The return value should be a dictionary that will be sent as JSON.
+    observer_id = request.params.get("observer_id")
+    print("hello")
+    print(observer_id)
+    url = URL("stats", vars=dict(observer_id=observer_id))
+    print("hello")
+    print(observer_id)
+    return dict(url=url)
+
+@action('handle_redirect_locations', method="GET")
+@action.uses(db, auth, url_signer)
+def handle_redirect_locations():
+    url = URL("location")
+    return dict(url=url)
+
+
+@action('handle_redirect_checklists', method="GET")
+@action.uses(db, auth, url_signer)
+def handle_redirect_checklists():
+    url = URL("checklist")
+    return dict(url=url)
 
 @action('checklist')
 @action.uses('checklist.html', db, auth, url_signer)
@@ -211,19 +241,21 @@ def display_location_data():
 @action('stats')
 @action.uses('stats.html', db, auth, url_signer)
 def stats():
+    observer_id = request.params.get('observer_id')
+    print("Stats page observer_id:", observer_id)  # Deb
     return dict(
         my_callback_url = URL('my_callback', signer=url_signer),
-        get_stats_url = URL('get_stats', signer=url_signer),
-        get_card_data_url = URL('get_card_data', signer=url_signer),
-        display_data_url = URL('display_data', signer=url_signer)
+        get_stats_url = URL('get_stats', vars=dict(observer_id=observer_id), signer=url_signer),
+        get_card_data_url = URL('get_card_data', vars=dict(observer_id=observer_id), signer=url_signer),
+        display_data_url = URL('display_data', vars=dict(observer_id=observer_id), signer=url_signer)
     )
 
 
 @action('get_stats', method="GET")
 @action.uses(db, auth, url_signer)
 def get_stats():
-
     observer_id = request.params.get('observer_id')
+    print(observer_id)
     sort_most_recent = request.params.get('sort_most_recent')
     search_query = request.params.get('search_query')
 
@@ -259,7 +291,7 @@ def get_stats():
 @action.uses(db, auth, url_signer)
 def get_card_data():
     observer_id = request.params.get('observer_id')
-
+    print(observer_id)
     # Fetch unique bird species
     query = (db.sightings.event_id == db.checklists.event_id) & (db.checklists.observer_id == observer_id)
     unique_birds = db(query).select(
@@ -289,7 +321,7 @@ def get_card_data():
 def display_data():
     observer_id = request.params.get('observer_id')
     bird_name = request.params.get("bird_name")
-
+    print(observer_id)
     query = (
         (db.sightings.event_id == db.checklists.event_id) &
         (db.checklists.observer_id == observer_id) &
