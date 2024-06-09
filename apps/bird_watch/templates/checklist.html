@@ -16,9 +16,62 @@
         <div class="card-content">
             <div class="field has-addons">
                 <div class="control">
-                    <button class="button is-primary">
-                        <i class="fa-solid fa-plus"></i> New
-                    </button>
+                    <button class="button is-primary" @click="showModal = true"><i class="fa-solid fa-plus"></i> New</button>
+                    
+                    <div class="modal" :class="{ 'is-active': showModal }">
+                        <div class="modal-background" @click="showModal = false"></div>
+                        <div class="modal-content">
+                            <div class="modal-card">
+                                <header class="modal-card-head">
+                                    <p class="modal-card-title">New Checklist</p>
+                                    <button class="delete" aria-label="close" @click="showModal = false"></button>
+                                </header>
+                                <section class="modal-card-body">
+                                    <div class="field">
+                                        <div class="columns">
+                                            <div class="column is-one-third">
+                                                <label class="label">Select Date</label>
+                                                <div class="control">
+                                                    <input class="input" v-model="new_date" type="date" placeholder="Select Date">
+                                                </div>
+                                            </div>
+                                            <div class="column is-one-third">
+                                                <label class="label">Select Time</label>
+                                                <div class="control">
+                                                    <input class="input" v-model="new_time" type="time" placeholder="Select Time">
+                                                </div>
+                                            </div>
+                                            <div class="column is-one-third">
+                                                <label class="label">Duration (minutes)</label>
+                                                <div class="control">
+                                                    <input class="input" v-model="new_duration" type="number" min="0" placeholder="Enter Duration">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="columns">
+                                            <div class="column">
+                                                <label class="label">LATITUDE</label>
+                                                <div class="control">
+                                                    <input class="input" v-model="new_latitude" type="number" step="any" placeholder="Enter Latitude">
+                                                </div>
+                                            </div>
+                                            <div class="column">
+                                                <label class="label">LONGITUDE</label>
+                                                <div class="control">
+                                                    <input class="input" v-model="new_longitude" type="number" step="any" placeholder="Enter Longitude">
+                                                </div>
+                                            </div>                                            
+                                        </div>
+
+                                    </div>
+                                </section>
+                                <footer class="modal-card-foot">
+                                    <button class="button is-success" @click="save_button">Save</button>
+                                </footer>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
                 <div class="control is-expanded">
                     <input class="input" type="text" v-model="search_query" placeholder="Search species">
@@ -46,7 +99,9 @@
                 </thead>
                 <tbody>
                     <tr v-for="c in checklist" :key="c.id">
-                        <td class="is-clickable" @click="">{{c.event_id}}</td>
+                        <td class="is-clickable">
+                            {{c.event_id}}
+                        </td>
                         <td class="is-clickable" @click="">{{bird_count[c.event_id]}}</td>
                         <td class="is-clickable" @click="">{{c.date}}</td>
                         <td>{{c.latitude}}, {{c.longitude}}</td>
