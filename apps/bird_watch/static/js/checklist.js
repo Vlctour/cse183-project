@@ -10,7 +10,14 @@ app.data = {
         return {
             checklist: [],
             bird_count: {},
+            new_date: null,         
+            new_time: null,         
+            new_duration: null,     
+            new_latitude: null,      
+            new_longitude: null,    
             my_value: 1, // This is an example.
+            showModal: false,
+            map: null,
         };
     },
     methods: {
@@ -30,14 +37,30 @@ app.data = {
                 
             });
 
-        }
-        // delete_contact: function(id) {
-        //     let self = this;
-        //     let i = this.box_id(id);
-        //     axios.post(delete_contact_url, {id: id}).then(function(r){
-        //         self.contacts.splice(i, 1)[0];
-        //     });
+        },
+        openModal: function() {
+            this.showModal = true;
+          },
+        closeModal: function() {
+            this.showModal = false;
+        },
+        // get_sighting_url: function(event_id) {
+        //     // return `checklist/sightings?event_id=${event_id}`;
+        //     return `/checklist/sightings/${event_id}`
         // },
+        save_button: function() {
+            if ((this.new_date === null) || (this.new_time === null) || (this.new_duration == null) || (this.new_latitude === null) || (this.new_longitude === null)) {
+                console.log("jello")
+            }
+            else {
+                this.add_checklist();   
+            }
+        },
+        add_checklist: function(){
+            
+            this.closeModal();
+
+        }
     }
 };
 
@@ -58,4 +81,3 @@ app.load_data = function () {
 }
 
 app.load_data();
-

@@ -59,20 +59,23 @@ def checklist():
         get_checklist_url = URL('get_checklist', signer=url_signer),
         delete_checklist_url = URL('delete_checklist', signer=url_signer)
     )
+    
 
 @action('checklist/sightings/<path:path>', method=['POST', 'GET'])
+# @action('checklist/sightings/<event_id:event_id>', method=['POST', 'GET'])
 @action('checklist/sightings', method=['POST', 'GET'])
 @action.uses('checklist_sightings.html', db, auth)
 def checklist_sightings(path=None):
+    query = (db.sightings.event_id > 0)
     grid = Grid(path,
                 formstyle=FormStyleBulma,
                 columns=[db.sightings.event_id, db.sightings.name, db.sightings.count],
                 grid_class_style=GridClassStyleBulma,
-                query=(db.sightings.id > 0),
+                query=query,
                 orderby=[db.sightings.id],
                 details=False,
                 search_queries=[['Search by Species', lambda val: db.sightings.name.contains(val)]],
-                )
+    )
     return dict(
         grid=grid,
     )
