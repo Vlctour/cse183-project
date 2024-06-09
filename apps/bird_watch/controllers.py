@@ -29,12 +29,12 @@ from py4web import action, request, abort, redirect, URL
 from yatl.helpers import A
 from .common import db, session, T, cache, auth, logger, authenticated, unauthenticated, flash
 from py4web.utils.url_signer import URLSigner
-from .models import get_user_email, convert_time
+from .models import get_user_email, convert_time, get_observer_id
 
 url_signer = URLSigner(session)
 
 @action('index')
-@action.uses('index.html', db, auth, url_signer)
+@action.uses('index.html', db, session, auth.user, url_signer)
 def index():
     return dict(
         # COMPLETE: return here any signed URLs you need.
@@ -57,11 +57,8 @@ def my_callback():
 def handle_redirect_stats():
     # The return value should be a dictionary that will be sent as JSON.
     observer_id = request.params.get("observer_id")
-    print("hello")
     print(observer_id)
     url = URL("stats", vars=dict(observer_id=observer_id))
-    print("hello")
-    print(observer_id)
     return dict(url=url)
 
 @action('handle_redirect_locations', method="GET")
@@ -239,7 +236,7 @@ def display_location_data():
     )
 
 @action('stats')
-@action.uses('stats.html', db, auth, url_signer)
+@action.uses('stats.html', db,session, auth.user, url_signer)
 def stats():
     observer_id = request.params.get('observer_id')
     print("Stats page observer_id:", observer_id)  # Deb
@@ -252,10 +249,9 @@ def stats():
 
 
 @action('get_stats', method="GET")
-@action.uses(db, auth, url_signer)
+@action.uses(db, session, auth.user, url_signer)
 def get_stats():
-    observer_id = request.params.get('observer_id')
-    print(observer_id)
+    observer_id = get_observer_id()
     sort_most_recent = request.params.get('sort_most_recent')
     search_query = request.params.get('search_query')
 
@@ -288,9 +284,9 @@ def get_stats():
     return dict(birds_seen=rows, size=size)
 
 @action('get_card_data', method="GET")
-@action.uses(db, auth, url_signer)
+@action.uses(db, session, auth.user, url_signer)
 def get_card_data():
-    observer_id = request.params.get('observer_id')
+    observer_id = get_observer_id()
     print(observer_id)
     # Fetch unique bird species
     query = (db.sightings.event_id == db.checklists.event_id) & (db.checklists.observer_id == observer_id)
@@ -317,9 +313,9 @@ def get_card_data():
     )
 
 @action('display_data', method="GET")
-@action.uses(db, auth, url_signer)
+@action.uses(db, session, auth.user, url_signer)
 def display_data():
-    observer_id = request.params.get('observer_id')
+    observer_id = get_observer_id()
     bird_name = request.params.get("bird_name")
     print(observer_id)
     query = (

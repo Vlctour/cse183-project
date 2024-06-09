@@ -13,9 +13,6 @@ app.data = {
         stats_redirect: function() {
             console.log("hello");
             axios.get(handle_redirect_stats_url, {
-                params: {
-                    observer_id: 'obs1171407',
-                }
             }).then(function(r){
                 window.location.href = r.data.url
             });
