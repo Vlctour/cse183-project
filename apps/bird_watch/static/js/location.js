@@ -4,7 +4,6 @@
 // and be used to initialize it.
 let app = {};
 
-
 app.data = {    
     data: function() {
         return {
@@ -40,28 +39,22 @@ app.data = {
             return null
         },
         update_page: function(val) {
-            let last_page = this.total_pages 
+            let last_page = this.total_pages;
             if ((this.page_number == 1 && val == -1) || (this.page_number >= last_page && val == 1)) {
-                return
+                return;
             }
-            this.page_number += val
+            this.page_number += val;
 
-            if (this.page_number != 1 || this.page_number != last_page) {
-                this.first_page = this.last_page = false
-            }
-            if (this.page_number == 1) {
-                this.first_page = true
-            }
-            if (this.page_number >= last_page) {
-                this.last_page = true
-            }
-            const start = (this.page_number - 1) * this.items_per_page
-            const end = this.page_number * this.items_per_page
-            this.selected_species = this.species.slice(start,end)
+            this.first_page = this.page_number == 1;
+            this.last_page = this.page_number >= last_page;
+
+            const start = (this.page_number - 1) * this.items_per_page;
+            const end = this.page_number * this.items_per_page;
+            this.selected_species = this.species.slice(start, end);
         },
         display_location_data: function(item_id) {
-            let self = this
-            let i = self.find_item_idx(item_id)
+            let self = this;
+            let i = self.find_item_idx(item_id);
             axios.get(display_location_data_url, {
                 params: {
                     bird_name: self.selected_species[i].sightings.name,
@@ -71,9 +64,9 @@ app.data = {
                     right: self.border_right
                 }
             }).then(function (r){
-                self.bird_data = r.data.bird_data
-                self.bird_chart_label_name = r.data.bird_name
-                self.render_chart(r.data.bird_name)
+                self.bird_data = r.data.bird_data;
+                self.bird_chart_label_name = r.data.bird_name;
+                self.render_chart(r.data.bird_name);
                 // self.chart_loading = false
             });
         },
@@ -165,19 +158,27 @@ app.load_data = function () {
         }
     }).then(function (r) {
         app.vue.species = r.data.species;
-        app.vue.top_contributors = r.data.top_contributors
+        app.vue.top_contributors = r.data.top_contributors;
         app.vue.checklist_num = r.data.checklist_num;
         app.vue.num_sightings = r.data.num_sightings;
         app.vue.total_items = r.data.species.length;
         app.vue.total_pages = Math.ceil(app.vue.total_items / app.vue.items_per_page);
-        const start = (app.vue.page_number - 1) * app.vue.items_per_page
-        const end = app.vue.page_number * app.vue.items_per_page
-        app.vue.selected_species = app.vue.species.slice(start,end)
-        const first_entry = app.vue.selected_species[0].sightings.id
-        self.bird_chart_label_name = app.vue.selected_species[0].sightings.name
-        app.vue.display_location_data(first_entry)
+        
+        // Handle case where there's only one page
+        if (app.vue.total_pages <= 1) {
+            app.vue.first_page = true;
+            app.vue.last_page = true;
+        }
+
+        const start = (app.vue.page_number - 1) * app.vue.items_per_page;
+        const end = app.vue.page_number * app.vue.items_per_page;
+        app.vue.selected_species = app.vue.species.slice(start, end);
+        
+        const first_entry = app.vue.selected_species[0].sightings.id;
+        app.vue.bird_chart_label_name = app.vue.selected_species[0].sightings.name;
+        app.vue.display_location_data(first_entry);
     });
-}
+};
 
 app.load_radar_data = function () {
     axios.get(get_radar_data_url, {
@@ -200,9 +201,7 @@ app.load_radar_data = function () {
         })
         app.vue.createRadarChart();
     });
-}
-
+};
 
 app.load_data();
 app.load_radar_data();
-

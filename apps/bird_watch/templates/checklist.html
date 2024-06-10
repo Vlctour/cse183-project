@@ -4,10 +4,26 @@
 [v-cloak] {
     display: none;
 }
+#map {
+        height: 300px; /* Ensure the height is sufficient */
+    }
+.input.is-danger {
+    border-color: #ff3860;
+}
+.help.is-danger {
+    color: #ff3860;
+}
 </style>
 
 <!-- Include Bulma CSS -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.3/css/bulma.min.css">
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""></script>
 
 <div class="section" id="app" v-cloak>
     <!-- Put here your Vue.js template -->
@@ -16,54 +32,41 @@
         <div class="card-content">
             <div class="field has-addons">
                 <div class="control">
-                    <button class="button is-primary" @click="showModal = true"><i class="fa-solid fa-plus"></i> New</button>
+                    <button class="button is-primary" @click="openModal"><i class="fa-solid fa-plus"></i> New</button>
                     
                     <div class="modal" :class="{ 'is-active': showModal }">
-                        <div class="modal-background" @click="showModal = false"></div>
+                        <div class="modal-background" @click="closeModal"></div>
                         <div class="modal-content">
                             <div class="modal-card">
                                 <header class="modal-card-head">
                                     <p class="modal-card-title">New Checklist</p>
-                                    <button class="delete" aria-label="close" @click="showModal = false"></button>
+                                    <button class="delete" aria-label="close" @click="closeModal"></button>
                                 </header>
                                 <section class="modal-card-body">
                                     <div class="field">
                                         <div class="columns">
                                             <div class="column is-one-third">
-                                                <label class="label">Select Date</label>
+                                                <label class="label" :class="{'has-text-danger': new_date === null && validationError}">Select Date</label>
                                                 <div class="control">
-                                                    <input class="input" v-model="new_date" type="date" placeholder="Select Date">
+                                                    <input class="input" :class="{'is-danger': new_date === null && validationError}" v-model="new_date" type="date" placeholder="Select Date">
                                                 </div>
                                             </div>
                                             <div class="column is-one-third">
-                                                <label class="label">Select Time</label>
+                                                <label class="label" :class="{'has-text-danger': new_time === null && validationError}">Select Time</label>
                                                 <div class="control">
-                                                    <input class="input" v-model="new_time" type="time" placeholder="Select Time">
+                                                    <input class="input" :class="{'is-danger': new_time === null && validationError}" v-model="new_time" type="time" placeholder="Select Time">
                                                 </div>
                                             </div>
                                             <div class="column is-one-third">
-                                                <label class="label">Duration (minutes)</label>
+                                                <label class="label" :class="{'has-text-danger': new_duration === null && validationError}">Duration (minutes)</label>
                                                 <div class="control">
-                                                    <input class="input" v-model="new_duration" type="number" min="0" placeholder="Enter Duration">
+                                                    <input class="input" :class="{'is-danger': new_duration === null && validationError}" v-model="new_duration" type="number" min="0" placeholder="Enter Duration">
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="columns">
-                                            <div class="column">
-                                                <label class="label">LATITUDE</label>
-                                                <div class="control">
-                                                    <input class="input" v-model="new_latitude" type="number" step="any" placeholder="Enter Latitude">
-                                                </div>
-                                            </div>
-                                            <div class="column">
-                                                <label class="label">LONGITUDE</label>
-                                                <div class="control">
-                                                    <input class="input" v-model="new_longitude" type="number" step="any" placeholder="Enter Longitude">
-                                                </div>
-                                            </div>                                            
-                                        </div>
-
+                                        <div id="map"></div>
                                     </div>
+                                    <p v-if="validationError" class="help is-danger">Please fill out all fields and place a pin on the map.</p>
                                 </section>
                                 <footer class="modal-card-foot">
                                     <button class="button is-success" @click="save_button">Save</button>
@@ -90,7 +93,6 @@
                 <thead>
                     <tr>
                         <th>EVENT ID</th>
-
                         <th>SPECIES</th>
                         <th>DATE</th>
                         <th>LOCATION</th>
@@ -118,7 +120,6 @@
             </table>
         </div>
     </div>
-    <!-- <a href="[[=URL('checklist', 'sightings')]]" class="button is-danger">Don't Click</a> -->
 </div>
 
 [[block page_scripts]]
@@ -126,9 +127,33 @@
 <script>
     let my_callback_url = "[[=XML(my_callback_url)]]";
     let get_checklist_url = "[[=XML(get_checklist_url)]]";
-    let delete_checklist_url = "[[=XML(delete_checklist_url)]]"
-    let handle_redirect_url = "[[=XML(handle_redirect_url)]]"
+    let delete_checklist_url = "[[=XML(delete_checklist_url)]]";
+    let handle_redirect_url = "[[=XML(handle_redirect_url)]]";
+    let add_checklist_url = "[[=XML(add_checklist_url)]]";
+    document.addEventListener('DOMContentLoaded', function () {
+        var map = L.map('map').setView([36.974117, -122.030792], 13);
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
 
+        var marker = null;
+
+        // Listen for clicks on the map
+        map.on('click', function (e) {
+            if (marker) {
+                map.removeLayer(marker);
+            }
+            marker = L.marker(e.latlng).addTo(map);
+
+            // Update Vue data
+            app.vue.new_latitude = e.latlng.lat;
+            app.vue.new_longitude = e.latlng.lng;
+        });
+    });
 </script>
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="js/checklist.js"></script>
 [[end]]
+

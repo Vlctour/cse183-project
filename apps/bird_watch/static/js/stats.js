@@ -29,7 +29,13 @@ app.data = {
             minutes: 0,
         };
     },
-    
+    computed: {
+        format_time: function() {
+            let hours = this.hours.toString().padStart(2, '0');
+            let minutes = this.minutes.toString().padStart(2, '0');
+            return `${hours}:${minutes}:00`;
+        }
+    },
     methods: {
         find_item_idx: function(id) {
             // return this.shopping_list.findIndex(item => item.id === id)
@@ -154,6 +160,10 @@ app.load_data = function () {
         app.vue.stats = r.data.birds_seen;
         app.vue.total_items = r.data.size;
         app.vue.total_pages = Math.ceil(app.vue.total_items / app.vue.items_per_page);
+        if (app.vue.total_pages <= 1) {
+            app.vue.first_page = true;
+            app.vue.last_page = true;
+        }
         const start = (app.vue.page_number - 1) * app.vue.items_per_page;
         const end = app.vue.page_number * app.vue.items_per_page;
         app.vue.selected_stats = app.vue.stats.slice(start,end);

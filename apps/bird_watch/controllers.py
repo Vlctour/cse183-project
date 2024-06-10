@@ -29,7 +29,7 @@ from py4web import action, request, abort, redirect, URL
 from yatl.helpers import A
 from .common import db, session, T, cache, auth, logger, authenticated, unauthenticated, flash, Field
 from py4web.utils.url_signer import URLSigner
-from .models import get_user_email, convert_time, get_observer_id
+from .models import get_user_email, convert_time, get_observer_id, generate_event_id
 from py4web.utils.form import Form
 from py4web.utils.form import FormStyleBulma, FormStyleDefault
 from py4web.utils.grid import Grid, GridClassStyleBulma, GridClassStyle
@@ -60,9 +60,9 @@ def my_callback():
 @action.uses(db, auth, url_signer)
 def handle_redirect_stats():
     # The return value should be a dictionary that will be sent as JSON.
-    observer_id = request.params.get("observer_id")
-    print(observer_id)
-    url = URL("stats", vars=dict(observer_id=observer_id))
+    # observer_id = request.params.get("observer_id")
+    # url = URL("stats", vars=dict(observer_id=observer_id))
+    url = URL("stats")
     return dict(url=url)
 
 @action('handle_redirect_locations', method="GET")
@@ -86,6 +86,7 @@ def checklist():
         my_callback_url = URL('my_callback', signer=url_signer),
         get_checklist_url = URL('get_checklist', signer=url_signer),
         delete_checklist_url = URL('delete_checklist', signer=url_signer),
+        add_checklist_url = URL('add_checklist', signer=url_signer),
         handle_redirect_url = URL('handle_redirect', signer=url_signer),
     )
     
@@ -138,15 +139,8 @@ def checklist_sightings(event_id=None, path=None):
 @action.uses(db, session, auth.user, url_signer)
 def get_checklist():
     observer_id = get_observer_id()
-    print(type(observer_id))
-    print("get_checklist",observer_id)
-    print("hello")
     query = (db.checklists.observer_id == observer_id)
-    print("hello2")
-    print(query)
     row = db(query).select()
-    print("hello3")
-    print(row)
     row2 = db(
         query & (db.checklists.event_id == db.sightings.event_id) & (db.sightings.count != '')
     ).select(
@@ -155,7 +149,6 @@ def get_checklist():
         groupby=db.sightings.event_id
     ).as_list()
     
-    print(row2)
     bird_count_dict = {item['sightings']['event_id']: item['count'] for item in row2}
 
     return dict(checklist=row, bird_count=bird_count_dict)
@@ -176,6 +169,28 @@ def delete_checklist():
     item = db(db.checklists.event_id == event_id).select().first()
     item.delete_record()
     return dict(success=True)
+
+@action('add_checklist', method="POST")
+@action.uses(db, session, auth.user, url_signer)
+def add_checklist():
+    observer_id = get_observer_id()
+    event_id = generate_event_id()
+    latitude = request.json.get("latitude")
+    longitude = request.json.get("longitude")
+    date = request.json.get("date")
+    time = request.json.get("time")
+    duration = abs(float(request.json.get("duration")))
+    print(event_id,latitude,longitude, date, time, duration)
+    id = db.checklists.insert(event_id=event_id,
+                            latitude=latitude, 
+                            longitude=longitude,
+                            date=date,
+                            time=time,
+                            observer_id=observer_id,
+                            duration=duration)
+    return dict(id=id)
+
+
 
 @action('location')
 @action.uses('location.html', db, session, auth.user, url_signer)
@@ -280,15 +295,13 @@ def get_radar_data():
     bottom = request.params.get('bottom')
     left = request.params.get('left')
     right = request.params.get('right')
-    bird_name = request.params.get('name')
     bounds_query = ((db.checklists.latitude >= bottom) &
         (db.checklists.latitude <= top) &
         (db.checklists.longitude <= right) &
         (db.checklists.longitude >= left))
 
     query = (
-        (db.checklists.event_id == db.sightings.event_id) #&
-        # (db.sightings.name == bird_name)
+        (db.checklists.event_id == db.sightings.event_id)
     )
 
     rows = db(bounds_query & query).select(
@@ -333,13 +346,15 @@ def display_location_data():
 @action('stats')
 @action.uses('stats.html', db,session, auth.user, url_signer)
 def stats():
-    observer_id = request.params.get('observer_id')
-    print("Stats page observer_id:", observer_id)  # Deb
+    observer_id = get_observer_id()
+    observer_email = get_user_email()
     return dict(
         my_callback_url = URL('my_callback', signer=url_signer),
-        get_stats_url = URL('get_stats', vars=dict(observer_id=observer_id), signer=url_signer),
-        get_card_data_url = URL('get_card_data', vars=dict(observer_id=observer_id), signer=url_signer),
-        display_data_url = URL('display_data', vars=dict(observer_id=observer_id), signer=url_signer)
+        get_stats_url = URL('get_stats', signer=url_signer),
+        get_card_data_url = URL('get_card_data', signer=url_signer),
+        display_data_url = URL('display_data', signer=url_signer),
+        observer=observer_id,
+        observer_email=observer_email
     )
 
 
@@ -348,11 +363,9 @@ def stats():
 def get_stats():
     observer_id = get_observer_id()
 
-    print('hello,:',observer_id)
     sort_most_recent = request.params.get('sort_most_recent')
     search_query = request.params.get('search_query')
 
-    print(observer_id,sort_most_recent)
         
     query = (db.sightings.event_id == db.checklists.event_id) & (db.checklists.observer_id == observer_id)
 
@@ -384,7 +397,6 @@ def get_stats():
 @action.uses(db, session, auth.user, url_signer)
 def get_card_data():
     observer_id = get_observer_id()
-    print(observer_id)
     # Fetch unique bird species
     query = (db.sightings.event_id == db.checklists.event_id) & (db.checklists.observer_id == observer_id)
     unique_birds = db(query).select(
@@ -414,7 +426,6 @@ def get_card_data():
 def display_data():
     observer_id = get_observer_id()
     bird_name = request.params.get("bird_name")
-    print(observer_id)
     query = (
         (db.sightings.event_id == db.checklists.event_id) &
         (db.checklists.observer_id == observer_id) &

@@ -15,9 +15,8 @@ app.data = {
             new_duration: null,     
             new_latitude: null,      
             new_longitude: null,    
-            my_value: 1, // This is an example.
+            validationError: false, // New property to track validation state
             showModal: false,
-            map: null,
         };
     },
     methods: {
@@ -43,6 +42,7 @@ app.data = {
           },
         closeModal: function() {
             this.showModal = false;
+            this.validationError = false;
         },
         handle_redirect: function(event_id) {
             // return `checklist/sightings?event_id=${event_id}`;
@@ -56,17 +56,34 @@ app.data = {
             // return `/checklist/sightings/${event_id}`
         },
         save_button: function() {
-            if ((this.new_date === null) || (this.new_time === null) || (this.new_duration == null) || (this.new_latitude === null) || (this.new_longitude === null)) {
-                console.log("jello")
+            this.validationError = false;
+
+            if (this.new_date === null || this.new_time === null || this.new_duration === null || this.new_latitude === null || this.new_longitude === null) {
+                this.validationError = true;
+                return;
             }
-            else {
-                this.add_checklist();   
-            }
+
+            this.add_checklist();
         },
         add_checklist: function(){
-            
+            let self = this;
             this.closeModal();
-
+            axios.post(add_checklist_url, {
+                date: self.new_date,        
+                time: self.new_time,         
+                duration: self.new_duration,     
+                latitude: self.new_latitude,      
+                longitude: self.new_longitude,    
+ 
+            }).then(function (r) {
+                app.load_data();
+                self.new_date = null;       
+                self.new_time = null;         
+                self.new_duration = null;     
+                self.new_latitude = null;    
+                self.new_longitude = null;
+                
+            });
         }
     }
 };

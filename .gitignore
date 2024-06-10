@@ -3,3 +3,5 @@
 /apps/bird_watch/__pycache__/*
 /apps/bird_watch/databases/*
 /apps/bird_watch/!databases/README.md
+/apps/.service/service.storage
+.vscode/

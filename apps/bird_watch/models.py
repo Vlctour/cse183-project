@@ -7,6 +7,8 @@ import csv
 from .common import db, Field, auth
 from pydal.validators import *
 import re
+import random
+
 
 
 path="/Users/shaun/Desktop/CSE 183/cse183-project/apps/bird_watch/sample_data/"
@@ -24,16 +26,19 @@ def get_observer_id():
         return username
     return None 
 
+def generate_event_id():
+    validator = IS_NOT_IN_DB(db, 'checklists.event_id')
 
+    while True:
+        new_event_id = f'S{random.randint(80000000, 89999999)}'
+        if validator(new_event_id)[1] is None:
+            return new_event_id
+        
 def convert_time(time):
     hours = time//60
     minutes = time % 60
     return hours, minutes
-### Define your table below
-#
-# db.define_table('thing', Field('name'))
-#
-## always commit your models to avoid problems later
+
 
 db.define_table(
     'species',
@@ -97,6 +102,7 @@ if db(db.checklists).isempty():
             if observer_id not in unique_observers:
                 db.auth_user.insert(
                 email=email,
+                first_name=row[5],
                 password='')
                 # Insert the user
                 # db.users.insert(
