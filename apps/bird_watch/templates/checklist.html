@@ -99,11 +99,13 @@
                 </thead>
                 <tbody>
                     <tr v-for="c in checklist" :key="c.id">
-                        <td class="is-clickable" @click="handle_redirect(c.event_id)">
-                            {{c.event_id}}
+                        <td>
+                            <button class="button is-primary is-small" @click="handle_redirect(c.event_id)">
+                                {{c.event_id}}
+                            </button>
                         </td>
-                        <td class="is-clickable" @click="">{{bird_count[c.event_id]}}</td>
-                        <td class="is-clickable" @click="">{{c.date}}</td>
+                        <td>{{bird_count[c.event_id]}}</td>
+                        <td>{{c.date}}</td>
                         <td>{{c.latitude}}, {{c.longitude}}</td>
                         <td>{{c.duration}}</td>
                         <td>
@@ -116,7 +118,7 @@
             </table>
         </div>
     </div>
-    <a href="[[=URL('checklist', 'sightings')]]" class="button is-danger">Don't Click</a>
+    <!-- <a href="[[=URL('checklist', 'sightings')]]" class="button is-danger">Don't Click</a> -->
 </div>
 
 [[block page_scripts]]
