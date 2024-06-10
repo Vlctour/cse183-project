@@ -83,7 +83,6 @@ app.data = {
             self.chart_loading = true
             axios.get(display_data_url, {
                 params: {
-                    observer_id: 'obs1644106',
                     bird_name: self.selected_stats[i].sightings.name
 
                 }
@@ -140,20 +139,6 @@ app.data = {
             });
         }
     },
-    // mounted() {
-    //     // Initialize the Leaflet map here
-    //     this.map = L.map('map').setView([51.505, -0.09], 13);
-        
-    //     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    //         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    //     }).addTo(this.map);
-
-    //     // Add a marker for demonstration purposes
-    //     L.marker([51.5, -0.09]).addTo(this.map)
-    //         .bindPopup('Hi its me')
-    //         .openPopup();
-        
-    // },
 };
 
 
@@ -162,7 +147,6 @@ app.vue = Vue.createApp(app.data).mount("#app");
 app.load_data = function () {
     axios.get(get_stats_url, {
         params: {
-            observer_id: 'obs1644106',
             sort_most_recent: app.vue.sort_most_recent,
             search_query: app.vue.search_query,
         }
@@ -181,9 +165,6 @@ app.load_data = function () {
 
 app.load_card_data = function () {
     axios.get(get_card_data_url, {
-        params: {
-            observer_id: 'obs1644106'
-        }
     }).then(function (r) {
         app.vue.unique_bird_count = r.data.unique_bird_count
         app.vue.total_bird_count = r.data.total_bird_count
@@ -195,4 +176,3 @@ app.load_card_data = function () {
 app.load_data();
 app.load_card_data();
 
-console.log(app.vue.unique_bird_count);

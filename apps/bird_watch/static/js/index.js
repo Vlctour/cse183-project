@@ -4,21 +4,35 @@
 // and be used to initialize it.
 let app = {};
 
-
-app.data = {    
-    data: function() {
+app.data = {
+    data() {
         return {
-            // Complete as you see fit.
-            my_value: 1, // This is an example.
         };
     },
     methods: {
-        // Complete as you see fit.
-        my_function: function() {
-            // This is an example.
-            this.my_value += 1;
+        stats_redirect: function() {
+            console.log("hello");
+            axios.get(handle_redirect_stats_url, {
+            }).then(function(r){
+                window.location.href = r.data.url
+            });
         },
-    }
+        checklists_redirect: function () {
+            axios.get(handle_redirect_checklists_url, {
+                params: {
+                    observer_id: 'obs1171407',
+                }
+            }).then(function(r){
+                window.location.href = r.data.url
+            });
+        },
+        locations_redirect: function () {
+            axios.get(handle_redirect_locations_url, {
+            }).then(function(r){
+                window.location.href = r.data.url
+            });
+        }
+    },
 };
 
 app.vue = Vue.createApp(app.data).mount("#app");
@@ -30,4 +44,3 @@ app.load_data = function () {
 }
 
 app.load_data();
-
