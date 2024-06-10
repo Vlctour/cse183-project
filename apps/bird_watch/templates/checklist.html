@@ -2,22 +2,131 @@
 
 <style>
 [v-cloak] {
-     display: none;
+    display: none;
 }
 </style>
 
+<!-- Include Bulma CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.3/css/bulma.min.css">
 
 <div class="section" id="app" v-cloak>
-  <!-- Put here your Vue.js template -->
-  <h1 class="title"><i class="fa-solid fa-cube"></i> Title</h1>
-  <p>Content: my_value: {{my_value}} </p>
-</div>
+    <!-- Put here your Vue.js template -->
+    <h1 class="title"><i class="fa-solid fa-clipboard-list"></i> Checklists</h1>
+    <div class="card">
+        <div class="card-content">
+            <div class="field has-addons">
+                <div class="control">
+                    <button class="button is-primary" @click="showModal = true"><i class="fa-solid fa-plus"></i> New</button>
+                    
+                    <div class="modal" :class="{ 'is-active': showModal }">
+                        <div class="modal-background" @click="showModal = false"></div>
+                        <div class="modal-content">
+                            <div class="modal-card">
+                                <header class="modal-card-head">
+                                    <p class="modal-card-title">New Checklist</p>
+                                    <button class="delete" aria-label="close" @click="showModal = false"></button>
+                                </header>
+                                <section class="modal-card-body">
+                                    <div class="field">
+                                        <div class="columns">
+                                            <div class="column is-one-third">
+                                                <label class="label">Select Date</label>
+                                                <div class="control">
+                                                    <input class="input" v-model="new_date" type="date" placeholder="Select Date">
+                                                </div>
+                                            </div>
+                                            <div class="column is-one-third">
+                                                <label class="label">Select Time</label>
+                                                <div class="control">
+                                                    <input class="input" v-model="new_time" type="time" placeholder="Select Time">
+                                                </div>
+                                            </div>
+                                            <div class="column is-one-third">
+                                                <label class="label">Duration (minutes)</label>
+                                                <div class="control">
+                                                    <input class="input" v-model="new_duration" type="number" min="0" placeholder="Enter Duration">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="columns">
+                                            <div class="column">
+                                                <label class="label">LATITUDE</label>
+                                                <div class="control">
+                                                    <input class="input" v-model="new_latitude" type="number" step="any" placeholder="Enter Latitude">
+                                                </div>
+                                            </div>
+                                            <div class="column">
+                                                <label class="label">LONGITUDE</label>
+                                                <div class="control">
+                                                    <input class="input" v-model="new_longitude" type="number" step="any" placeholder="Enter Longitude">
+                                                </div>
+                                            </div>                                            
+                                        </div>
 
+                                    </div>
+                                </section>
+                                <footer class="modal-card-foot">
+                                    <button class="button is-success" @click="save_button">Save</button>
+                                </footer>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="control is-expanded">
+                    <input class="input" type="text" v-model="search_query" placeholder="Search species">
+                </div>
+                <div class="control">
+                    <button class="button is-primary">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card mt-4">
+        <div class="card-content">
+            <table class="table is-striped has-text-centered is-hoverable is-fullwidth">
+                <thead>
+                    <tr>
+                        <th>EVENT ID</th>
+
+                        <th>SPECIES</th>
+                        <th>DATE</th>
+                        <th>LOCATION</th>
+                        <th>DURATION</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="c in checklist" :key="c.id">
+                        <td class="is-clickable" @click="handle_redirect(c.event_id)">
+                            {{c.event_id}}
+                        </td>
+                        <td class="is-clickable" @click="">{{bird_count[c.event_id]}}</td>
+                        <td class="is-clickable" @click="">{{c.date}}</td>
+                        <td>{{c.latitude}}, {{c.longitude}}</td>
+                        <td>{{c.duration}}</td>
+                        <td>
+                            <div class="is-clickable" @click="delete_checklist(c.event_id)">
+                                <i class="fa-solid fa-trash"></i>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <a href="[[=URL('checklist', 'sightings')]]" class="button is-danger">Don't Click</a>
+</div>
 
 [[block page_scripts]]
 <!-- Loads the index-specific js for Vue -->
 <script>
-  let my_callback_url = "[[=XML(my_callback_url)]]";
+    let my_callback_url = "[[=XML(my_callback_url)]]";
+    let get_checklist_url = "[[=XML(get_checklist_url)]]";
+    let delete_checklist_url = "[[=XML(delete_checklist_url)]]"
+    let handle_redirect_url = "[[=XML(handle_redirect_url)]]"
+
 </script>
-<script src="js/index.js"></script>
+<script src="js/checklist.js"></script>
 [[end]]

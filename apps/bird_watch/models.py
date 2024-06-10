@@ -9,6 +9,7 @@ from pydal.validators import *
 import re
 
 
+path="/home/vlctor/cse183_project/apps/bird_watch/sample_data/"
 
 def get_user_email():
     return auth.current_user.get('email') if auth.current_user else None
@@ -41,9 +42,9 @@ db.define_table(
 
 db.define_table(
     'sightings',
-    Field('event_id'),
-    Field('name'),
-    Field('count'),
+    Field('event_id', writable=False), # figure out
+    Field('name', requires=IS_NOT_EMPTY()),
+    Field('count', default="X"),
 )
 
 # db.define_table(
@@ -65,7 +66,7 @@ db.define_table(
 
 
 if db(db.species).isempty():
-    filepath='/Users/shaun/Desktop/CSE 183/cse183-project/apps/bird_watch/sample_data/species.csv'
+    filepath=f"{path}species.csv"
     with open(filepath, 'r') as f:
         reader = csv.reader(f)
         next(reader)
@@ -73,7 +74,7 @@ if db(db.species).isempty():
             db.species.insert(name=row[0])
 
 if db(db.sightings).isempty():
-    filepath='/Users/shaun/Desktop/CSE 183/cse183-project/apps/bird_watch/sample_data/sightings.csv'
+    filepath=f"{path}sightings.csv"    
     with open(filepath, 'r') as f:
         reader = csv.reader(f)
         next(reader)
@@ -84,7 +85,7 @@ if db(db.sightings).isempty():
 
 
 if db(db.checklists).isempty():
-    filepath='/Users/shaun/Desktop/CSE 183/cse183-project/apps/bird_watch/sample_data/checklists.csv'
+    filepath=f"{path}checklists.csv"    
     with open(filepath, 'r') as f:
         reader = csv.reader(f)
         next(reader)  # Skip the header row
