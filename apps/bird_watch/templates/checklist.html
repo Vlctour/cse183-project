@@ -100,7 +100,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="c in checklist" :key="c.id">
+                    <tr v-for="c in selected_checklist" :key="c.id">
                         <td>
                             <button class="button is-primary is-small" @click="handle_redirect(c.event_id)">
                                 {{c.event_id}}
@@ -118,6 +118,24 @@
                     </tr>
                 </tbody>
             </table>
+            <nav class="pagination is-right is-rounded is-small" role="navigation" aria-label="pagination">
+                <ul class="pagination-list">
+                    <button 
+                    class="button pagination-previous"
+                    :disabled="first_page"
+                    @click="update_page(-1)"
+                    >
+                        Previous
+                    </button>
+                    <button 
+                    class="button pagination-next"
+                    :disabled="last_page"
+                    @click="update_page(1)"
+                    >
+                        Next
+                    </button>
+                </ul>
+            </nav>
         </div>
     </div>
 </div>

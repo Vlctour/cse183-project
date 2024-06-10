@@ -43,12 +43,39 @@ def index():
     return dict(
         # COMPLETE: return here any signed URLs you need.
         my_callback_url = URL('my_callback', signer=url_signer),
+        get_heatmap_url = URL('get_heatmap', signer=url_signer),
         handle_redirect_stats_url = URL('handle_redirect_stats', signer=url_signer),
         handle_redirect_locations_url = URL('handle_redirect_locations', signer=url_signer),
         handle_redirect_checklists_url = URL('handle_redirect_checklists',  signer=url_signer),
     )
 
+@action('get_heatmap', method="GET")
+@action.uses(db, session, auth.user, url_signer)
+def get_heatmap():
+    bird_name = request.params.get('bird_name')
+    query = (
+        (db.sightings.event_id == db.checklists.event_id)
+    )
 
+    if bird_name is not None:
+        query &= (db.sightings.name.contains(bird_name))
+
+    rows = db(query).select(
+        db.checklists.longitude,
+        db.checklists.latitude,
+        db.sightings.count,
+        # limitby=[0,1]
+    ).as_list()
+    
+    density = []
+    for item in rows: 
+        if item['sightings']['count'] == 'X':
+            item['sightings']['count'] = 1
+        density.append([item['checklists']['latitude'], item['checklists']['longitude'], item['sightings']['count']])
+
+    return dict(
+        density=density
+    )
 @action('my_callback')
 @action.uses() # Add here things like db, auth, etc.
 def my_callback():
@@ -181,7 +208,6 @@ def add_checklist():
     date = request.json.get("date")
     time = request.json.get("time")
     duration = abs(float(request.json.get("duration")))
-    print(event_id,latitude,longitude, date, time, duration)
     id = db.checklists.insert(event_id=event_id,
                             latitude=latitude, 
                             longitude=longitude,

@@ -37,6 +37,16 @@
     </nav>
     <div class="card">
         <div class="card-content">
+            <div class="field has-addons">
+                <div class="control is-expanded">
+                  <input class="input" type="text" v-model="search_query" placeholder="Search species">
+                </div>
+                <div class="control">
+                  <button class="button is-primary" @click="update_heatmap">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                  </button>
+                </div>
+            </div>
             <div id="map"></div>
         </div>
     </div>
@@ -48,53 +58,11 @@
     let handle_redirect_stats_url = "[[=XML(handle_redirect_stats_url)]]";
     let handle_redirect_locations_url = "[[=XML(handle_redirect_locations_url)]]";
     let handle_redirect_checklists_url = "[[=XML(handle_redirect_checklists_url)]]";
-
-    document.addEventListener('DOMContentLoaded', function () {
-        var map = L.map('map').setView([36.974117, -122.030792], 13);
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        }).addTo(map);
-
-        var startPoint = null;
-        var drawnRectangle = null;
-        var markers = []; // Array to store markers
-
-        // Listen for clicks on the map
-        map.on('click', function (e) {
-            var clickedPoint = e.latlng;
-
-            // Remove all existing markers
-            for (var i = 0; i < markers.length; i++) {
-                map.removeLayer(markers[i]);
-            }
-            markers = []; // Clear the markers array
-
-            if (drawnRectangle) {
-                map.removeLayer(drawnRectangle)
-            }
-
-            if (!startPoint) {
-                // First click: store the starting point and add marker
-                startPoint = clickedPoint;
-                markers.push(L.marker(clickedPoint).addTo(map)); // Add marker to markers array
-            } else {
-                // Second click: draw the rectangle, reset starting point, and add marker
-                var rectBounds = [startPoint, clickedPoint];
-                drawnRectangle = L.rectangle(rectBounds, {color: 'red'}).addTo(map);
-                startPoint = null; // Reset the starting point for the next rectangle
-                markers.push(L.marker(clickedPoint).addTo(map)); // Add marker to markers array
-            }
-        });
-
-        function onMapClick(e) {
-            // Do nothing for this example
-        }
-
-        map.on('click', onMapClick);
-    });
+    let get_heatmap_url = "[[=XML(get_heatmap_url)]]";
 </script>
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
 <script src="js/index.js"></script>
+<script src="js/leaflet-heat.js"></script>
 [[end]]
