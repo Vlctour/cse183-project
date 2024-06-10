@@ -17,6 +17,7 @@ app.data = {
             new_longitude: null,    
             validationError: false, // New property to track validation state
             showModal: false,
+            search_query: null, 
         };
     },
     methods: {
@@ -84,6 +85,19 @@ app.data = {
                 self.new_longitude = null;
                 
             });
+        },
+        search_checklist: function() {
+            let self = this;
+            axios.get(search_checklist_url, {
+                params : {
+                    bird_name: self.search_query
+                }
+            }).then(function (r) {
+                console.log(r.data.checklist);
+                self.checklist = r.data.checklist;
+                self.bird_count = r.data.bird_count;
+            });
+            
         }
     }
 };
@@ -92,14 +106,9 @@ app.vue = Vue.createApp(app.data).mount("#app");
 
 app.load_data = function () {
     axios.get(get_checklist_url, {
-        params: {
-            observer_id: 'obs1644106'
-        }
     }).then(function (r) {
         app.vue.checklist = r.data.checklist;
         app.vue.bird_count = r.data.bird_count;
-        console.log(app.vue.checklist)
-        console.log(app.vue.bird_count)
         
     });
 }

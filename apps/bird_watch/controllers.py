@@ -88,6 +88,7 @@ def checklist():
         delete_checklist_url = URL('delete_checklist', signer=url_signer),
         add_checklist_url = URL('add_checklist', signer=url_signer),
         handle_redirect_url = URL('handle_redirect', signer=url_signer),
+        search_checklist_url = URL('search_checklist', signer=url_signer)
     )
     
 # @action('checklist/sightings', method=['GET'])
@@ -190,7 +191,39 @@ def add_checklist():
                             duration=duration)
     return dict(id=id)
 
+@action('search_checklist', method="GET")
+@action.uses(db, session, auth.user, url_signer)
+def search_checklist():
+    observer_id = get_observer_id()
+    bird_name = request.params.get('bird_name')
+    query = (
+        (db.checklists.observer_id == observer_id) &
+        (db.checklists.event_id == db.sightings.event_id) &
+        (db.sightings.name.contains(bird_name))
+    )
+    rows = db(query).select(
+        db.checklists.event_id,
+        db.checklists.latitude,
+        db.checklists.longitude,
+        db.checklists.date,
+        db.checklists.time,
+        db.checklists.observer_id,
+        db.checklists.duration,
+        distinct=True
+    ).as_list()
 
+    query2 = (db.checklists.observer_id == observer_id)
+    row2 = db(
+        query2 & (db.checklists.event_id == db.sightings.event_id) & (db.sightings.count != '')
+    ).select(
+        db.sightings.event_id,
+        db.sightings.count.count().with_alias("count"),
+        groupby=db.sightings.event_id
+    ).as_list()
+    
+    bird_count_dict = {item['sightings']['event_id']: item['count'] for item in row2}
+
+    return dict(checklist=rows, bird_count=bird_count_dict)
 
 @action('location')
 @action.uses('location.html', db, session, auth.user, url_signer)

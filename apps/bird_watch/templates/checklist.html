@@ -80,7 +80,7 @@
                     <input class="input" type="text" v-model="search_query" placeholder="Search species">
                 </div>
                 <div class="control">
-                    <button class="button is-primary">
+                    <button class="button is-primary" @click="search_checklist">
                         <i class="fa-solid fa-magnifying-glass"></i>
                     </button>
                 </div>
@@ -130,6 +130,7 @@
     let delete_checklist_url = "[[=XML(delete_checklist_url)]]";
     let handle_redirect_url = "[[=XML(handle_redirect_url)]]";
     let add_checklist_url = "[[=XML(add_checklist_url)]]";
+    let search_checklist_url = "[[=XML(search_checklist_url)]]";
     document.addEventListener('DOMContentLoaded', function () {
         var map = L.map('map').setView([36.974117, -122.030792], 13);
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
