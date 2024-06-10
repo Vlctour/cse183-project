@@ -27,9 +27,13 @@ Warning: Fixtures MUST be declared with @action.uses({fixtures}) else your app w
 
 from py4web import action, request, abort, redirect, URL
 from yatl.helpers import A
-from .common import db, session, T, cache, auth, logger, authenticated, unauthenticated, flash
+from .common import db, session, T, cache, auth, logger, authenticated, unauthenticated, flash, Field
 from py4web.utils.url_signer import URLSigner
 from .models import get_user_email, convert_time
+from py4web.utils.form import Form
+from py4web.utils.form import FormStyleBulma, FormStyleDefault
+from py4web.utils.grid import Grid, GridClassStyleBulma, GridClassStyle
+from pydal.validators import *
 
 url_signer = URLSigner(session)
 
@@ -53,7 +57,91 @@ def checklist():
     return dict(
         # COMPLETE: return here any signed URLs you need.
         my_callback_url = URL('my_callback', signer=url_signer),
+        get_checklist_url = URL('get_checklist', signer=url_signer),
+        delete_checklist_url = URL('delete_checklist', signer=url_signer),
+        handle_redirect_url = URL('handle_redirect', signer=url_signer),
     )
+    
+# @action('checklist/sightings', method=['GET'])
+@action('checklist/sightings/<event_id>', method=['GET', 'POST'])
+@action('checklist/sightings/<event_id>/<path:path>', method=['GET', 'POST'])
+@action.uses('checklist_sightings.html', db, auth)
+def checklist_sightings(event_id=None, path=None):
+    query = (db.sightings.event_id > 0)
+    showModal = 'false'
+    if event_id is not None:
+        query &= (db.sightings.event_id == event_id)
+
+    form = Form(
+        [
+            Field('name', requires=IS_NOT_EMPTY()),
+            Field('count', default="X"),
+        ],
+        formstyle=FormStyleBulma,
+    )
+
+    if form.accepted:
+        db.sightings.insert(
+            event_id=event_id, 
+            name=form.vars['name'], 
+            count=form.vars['count']
+        )
+        redirect(URL('checklist/sightings', event_id))
+
+    if request.method == 'POST':
+        showModal = 'true'
+
+    grid = Grid(path,
+                formstyle=FormStyleBulma,
+                columns=[db.sightings.event_id, db.sightings.name, db.sightings.count],
+                grid_class_style=GridClassStyleBulma,
+                query=query,
+                orderby=[db.sightings.id],
+                create=False,
+                details=False,
+                search_queries=[['Search by Species', lambda val: db.sightings.name.contains(val)]],
+    )
+    return dict(
+        grid=grid,
+        form=form,
+        showModal=showModal
+    )
+
+@action('get_checklist', method="GET")
+@action.uses(db, auth, url_signer)
+def get_checklist():
+    observer_id = request.params.get('observer_id')
+
+    query = (db.checklists.observer_id == observer_id)
+    row = db(query).select().as_list()
+
+    row2 = db(
+        query & (db.checklists.event_id == db.sightings.event_id)
+    ).select(
+        db.sightings.event_id,
+        db.sightings.count.count().with_alias("count"),
+        groupby=db.sightings.event_id
+    ).as_list()
+    bird_count_dict = {item['sightings']['event_id']: item['count'] for item in row2}
+
+    return dict(checklist=row, bird_count=bird_count_dict)
+
+
+@action('handle_redirect', method="GET")
+@action.uses(db, auth, url_signer)
+def handle_redirect():
+    event_id = request.params.get('event_id')
+    # url = URL("checklist/sightings/", vars=dict(event_id=event_id))
+    url = URL("checklist/sightings/" + event_id)
+    return dict(url=url)
+
+@action('delete_checklist', method="POST")
+@action.uses(db, auth, url_signer)
+def delete_checklist():
+    event_id = request.json.get('event_id')
+    item = db(db.checklists.event_id == event_id).select().first()
+    item.delete_record()
+    return dict(success=True)
 
 @action('location')
 @action.uses('location.html', db, auth, url_signer)
