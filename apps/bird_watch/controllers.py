@@ -138,12 +138,15 @@ def checklist_sightings(event_id=None, path=None):
 @action.uses(db, session, auth.user, url_signer)
 def get_checklist():
     observer_id = get_observer_id()
+    print(type(observer_id))
     print("get_checklist",observer_id)
     print("hello")
     query = (db.checklists.observer_id == observer_id)
     print("hello2")
-    row = db(query).select().as_list()
+    print(query)
+    row = db(query).select()
     print("hello3")
+    print(row)
     row2 = db(
         query & (db.checklists.event_id == db.sightings.event_id) & (db.sightings.count != '')
     ).select(

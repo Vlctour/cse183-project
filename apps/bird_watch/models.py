@@ -9,7 +9,7 @@ from pydal.validators import *
 import re
 
 
-path="/home/vlctor/cse183_project/apps/bird_watch/sample_data/"
+path="/Users/shaun/Desktop/CSE 183/cse183-project/apps/bird_watch/sample_data/"
 
 def get_user_email():
     return auth.current_user.get('email') if auth.current_user else None
@@ -61,7 +61,7 @@ db.define_table(
     Field('date', 'date'),
     Field('time', 'time'),
     Field('observer_id', 'string'),  # Reference to the users table
-    Field('duration', 'float'),
+    Field('duration', default=0.0),
 )
 
 
@@ -110,6 +110,9 @@ if db(db.checklists).isempty():
         reader = csv.reader(f)
         next(reader)
         for row in reader:
+            duration=row[6]
+            if not duration:
+                duration = 0.0
             db.checklists.insert(
                 event_id=row[0],
                 latitude=row[1],
@@ -117,7 +120,7 @@ if db(db.checklists).isempty():
                 date=row[3],
                 time=row[4],
                 observer_id = row[5],
-                duration=row[6]
+                duration=duration
             )
 
 db.commit()
