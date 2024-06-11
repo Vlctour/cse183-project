@@ -377,8 +377,10 @@ def get_species():
     # query 4 get top contributors
     number_of_contributors = 7
     top_contributors = db(bounds_query &
+        (db.checklists.observer_id == db.auth_user.first_name) &
         (db.sightings.event_id == db.checklists.event_id)
     ).select(
+        db.auth_user.first_name,
         db.checklists.observer_id.with_alias("observer_id"),
         db.checklists.duration.sum().with_alias("duration"),
         db.sightings.count.count().with_alias("count"),
@@ -387,7 +389,7 @@ def get_species():
         limitby=(0, number_of_contributors),
     )
 
-    top_contributor_ids = [(o.observer_id, o.count) for o in top_contributors]
+    top_contributor_ids = [(o.auth_user.first_name, o.count) for o in top_contributors]
     best_contributors = {}
     index = 0
     for contributor, count in top_contributor_ids:

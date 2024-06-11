@@ -10,9 +10,7 @@ import random
 import os
 
 
-
 path = "apps/bird_watch/sample_data/"
-
 
 def get_user_email():
     return auth.current_user.get('email') if auth.current_user else None
