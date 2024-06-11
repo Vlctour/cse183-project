@@ -1,56 +1,130 @@
 [[extend 'layout.html']]
 
 <style>
-    [v-cloak] {
-        display: none;
-    }
+[v-cloak] {
+    display: none;
+}
 
-    #map {
-        height: 600px; /* Ensure the height is sufficient */
-    }
+#map {
+    height: 600px; 
+    position: relative;
+}
+
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(207, 187, 187, 0.2); /* Semi-transparent black */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.loading-bar {
+    width: 50%; /* Adjust the width as needed */
+    max-width: 300px; /* Limit the maximum width */
+}
+
+.modal.is-active {
+    z-index: 1000; 
+}
+
+.map-container {
+    position: relative;
+}
 </style>
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-      crossorigin=""/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-        crossorigin=""></script>
-
 <div class="section" id="app" v-cloak>
-    <nav class="navbar" role="navigation" aria-label="main navigation">
-        <div class="columns">
-            <div class="column">
+    <div class="card mb-4">
+        <div class="card-content">
+            <nav class="navbar" role="navigation" aria-label="main navigation">
                 <div class="navbar-brand">
-                    <h1 class="title"><i class="fa-solid fa-earth-americas"></i>Index</h1>
+                    <a class="navbar-item" href="#">
+                        <h1 class="title"><i class="fa-solid fa-earth-americas"></i>Index</h1>
+                    </a>
+                    <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
+                        <span aria-hidden="true"></span>
+                        <span aria-hidden="true"></span>
+                        <span aria-hidden="true"></span>
+                    </a>
                 </div>
-            </div>
-            <div class="column">
                 <div id="navbarBasicExample" class="navbar-menu">
-                    <div class="navbar-start">
+                    <div class="navbar-end">
                         <a class="navbar-item" @click="stats_redirect">Stats</a>
                         <a class="navbar-item" @click="checklists_redirect">Checklists</a>
                         <a class="navbar-item" @click="locations_redirect">Locations</a>
+                    </div>
                 </div>
-            </div>
+            </nav>
         </div>
-    </nav>
+    </div>
     <div class="card">
         <div class="card-content">
             <div class="field has-addons">
                 <div class="control is-expanded">
-                  <input class="input" type="text" v-model="search_query" placeholder="Search species">
+                    <input class="input" type="text" v-model="search_query" placeholder="Search species">
                 </div>
                 <div class="control">
-                  <button class="button is-primary" @click="update_heatmap">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                  </button>
+                    <button class="button is-primary" @click="update_heatmap">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
                 </div>
             </div>
-            <div id="map"></div>
+            <div class="map-container">
+                <div class="loading-overlay" v-if="loading">
+                    <progress class="progress is-small is-primary loading-bar" max="100">Loading...</progress>
+                </div>
+                <div id="map"></div>
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-content">
+            <div class="modal" :class="{ 'is-active': showModal }">
+                <div class="modal-background" @click="closeModal"></div>
+                <div class="modal-content">
+                    <div class="modal-card">
+                        <header class="modal-card-head">
+                            <p class="modal-card-title">New Checklist</p>
+                            <button class="delete" aria-label="close" @click="closeModal"></button>
+                        </header>
+                        <section class="modal-card-body">
+                            <div class="field">
+                                <div class="columns">
+                                    <div class="column is-one-third">
+                                        <label class="label" :class="{'has-text-danger': new_date === null && validationError}">Select Date</label>
+                                        <div class="control">
+                                            <input class="input" :class="{'is-danger': new_date === null && validationError}" v-model="new_date" type="date" placeholder="Select Date">
+                                        </div>
+                                    </div>
+                                    <div class="column is-one-third">
+                                        <label class="label" :class="{'has-text-danger': new_time === null && validationError}">Select Time</label>
+                                        <div class="control">
+                                            <input class="input" :class="{'is-danger': new_time === null && validationError}" v-model="new_time" type="time" placeholder="Select Time">
+                                        </div>
+                                    </div>
+                                    <div class="column is-one-third">
+                                        <label class="label" :class="{'has-text-danger': new_duration === null && validationError}">Duration (minutes)</label>
+                                        <div class="control">
+                                            <input class="input" :class="{'is-danger': new_duration === null && validationError}" v-model="new_duration" type="number" min="0" placeholder="Enter Duration">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <p v-if="validationError" class="help is-danger">Please fill out all fields and place a pin on the map.</p>
+                        </section>
+                        <footer class="modal-card-foot">
+                            <button class="button is-success" @click="add_checklist()">Save</button>
+                        </footer>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
 
 [[block page_scripts]]
 <script>
@@ -59,10 +133,18 @@
     let handle_redirect_locations_url = "[[=XML(handle_redirect_locations_url)]]";
     let handle_redirect_checklists_url = "[[=XML(handle_redirect_checklists_url)]]";
     let get_heatmap_url = "[[=XML(get_heatmap_url)]]";
+    let add_checklist_url = "[[=XML(add_checklist_url)]]";
 </script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""></script>
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"/>
+<script src="https://unpkg.com/leaflet-draw/dist/leaflet.draw.js"></script>
 <script src="js/index.js"></script>
 <script src="js/leaflet-heat.js"></script>
 [[end]]

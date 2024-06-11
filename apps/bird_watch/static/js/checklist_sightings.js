@@ -12,16 +12,17 @@ app.data = {
         };
     },
     methods: {
-        // Complete as you see fit.
-        my_function: function() {
-            // This is an example.
-            return
-        },
         openModal: function() {
             this.showModal = true;
         },
         closeModal: function() {
             this.showModal = false;
+        },
+        checklists_redirect: function () {
+            axios.get(handle_redirect_checklists_url, {
+            }).then(function (r) {
+                window.location.href = r.data.url;
+            });
         },
     }
 };

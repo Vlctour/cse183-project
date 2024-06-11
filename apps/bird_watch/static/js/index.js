@@ -10,98 +10,215 @@ app.data = {
             heatmap_data: [],
             search_query: null,
             map: null,
-            heatmapLayer: null,  // Add a property to store the heatmap layer
+            heatmapLayer: null,
+            drawn_rectangles: [],
+            new_date: null,         
+            new_time: null,              
+            new_duration: null,
+            validationError: false, 
+            showModal: false,
+            coords: null,
+            bounds: null,
+            loading: true,
+            north: 90,
+            south: -90,  
+            east: 180,   
+            west: -180,
         };
     },
     methods: {
-        stats_redirect: function() {
-            axios.get(handle_redirect_stats_url, {
-            }).then(function(r){
+        stats_redirect: function () {
+            axios.get(handle_redirect_stats_url, {}).then(function (r) {
                 window.location.href = r.data.url;
             });
         },
         checklists_redirect: function () {
             axios.get(handle_redirect_checklists_url, {
-                params: {
-                    observer_id: 'obs1171407',
-                }
-            }).then(function(r){
+            }).then(function (r) {
                 window.location.href = r.data.url;
             });
         },
         locations_redirect: function () {
+            let self = this;
             axios.get(handle_redirect_locations_url, {
-            }).then(function(r){
+                params: {
+                    north: self.north,   
+                    south: self.south, 
+                    east: self.east,   
+                    west: self.west,  
+                }
+            }).then(function (r) {
                 window.location.href = r.data.url;
+                self.north = 90;
+                self.south = -90;  
+                self.east = 180;  
+                self.west = -180; 
             });
         },
-        update_heatmap: function () {
-            app.load_data();
+        add_checklist: function(){
+            let self = this;
+            this.closeModal();
+            axios.post(add_checklist_url, {
+                date: self.new_date,        
+                time: self.new_time,         
+                duration: self.new_duration ,     
+                latitude: self.coords.lat,      
+                longitude: self.coords.lng,    
+ 
+            }).then(function (r) {
+                app.load_data();
+                self.new_date = null;       
+                self.new_time = null;         
+                self.new_duration = null;     
+                self.new_latitude = null;    
+                self.new_longitude = null;
+                self.checklists_redirect();
+            });
+        },
+        openModal: function() {
+            this.showModal = true;
+          },
+        closeModal: function() {
+            this.showModal = false;
+            this.validationError = false;
+        },
+        update_heatmap() {
+            app.load_data(); 
             this.search_query = null;
-        }
-    },
-};
+        },
+        render_heatmap() {
+            if (!this.map) {
+                var osmUrl = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                osmAttrib = '&copy; <a href="http://openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                osm = L.tileLayer(osmUrl, {
+                    maxZoom: 18,
+                    attribution: osmAttrib
+                });
+            
+                this.map = L.map('map', {
+                    layers: [osm],
+                    center: [36.9741, -122.0308],
+                    zoom: 15
+                });
+                var drawnItems = L.featureGroup().addTo(this.map);
+                this.map.addControl(new L.Control.Draw({
+                    draw: {
+                        polygon: false,
+                        marker: true,
+                        polyline: false,
+                        circle: false,
+                        circlemarker: false,
+                    },
+                    edit: {
+                        featureGroup: drawnItems
+                    }
+                }));
+                this.map.on('draw:created', function (event) {
+                    var layer = event.layer;
+                    
+                    // Check if the layer is a marker
+                    if(layer instanceof L.Marker){
+                        // Check if there are existing markers and remove them
+                        drawnItems.eachLayer(function(existingLayer) {
+                            if(existingLayer instanceof L.Marker) {
+                                drawnItems.removeLayer(existingLayer);
+                            }
+                        });
 
+                        app.vue.coords = layer.getLatLng();
+                        // console.log("lat lang is:", this.coords.lat, this.coords.lng)
+                    }
+
+                    // Check if the layer is a rectangle
+                    if(layer instanceof L.Rectangle){
+                        // Check if there are existing rectangles and remove them
+                        drawnItems.eachLayer(function(existingLayer) {
+                            if(existingLayer instanceof L.Rectangle) {
+                                drawnItems.removeLayer(existingLayer);
+                            }
+                        });
+                        
+                        var bounds = layer.getBounds();
+                        // Get the bounds of the new rectangle
+                        app.vue.north = bounds.getNorth();
+                        app.vue.south = bounds.getSouth();
+                        app.vue.west = bounds.getWest();
+                        app.vue.east = bounds.getEast();
+                        
+                        // console.log(bounds);
+                    }
+                    
+                    drawnItems.addLayer(layer);
+                    console.log("left draw:created");
+                });
+                this.map.on('draw:deleted', function (event) {
+                    var layers = event.layers;
+                    layers.eachLayer(function (layer) {
+                        if(layer instanceof L.Marker){
+                            app.vue.coords = null;
+                        } else if (layer instanceof L.Rectangle) {
+                            app.vue.bounds = null
+                        }
+                    });
+                });
+                var customControl = L.Control.extend({
+                    options: {
+                        position: 'topleft' // Change position as needed
+                    },
+                    onAdd: function () {
+                        var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+                        
+                        // Add your custom buttons here
+                        container.innerHTML += '<button onclick="app.vue.stats_redirect()">statistics on region</button>';
+                        container.innerHTML += '<button onclick="app.vue.openModal()">submit a checklist</button>';                        
+                        return container;
+                    }
+                });
+
+                this.map.addControl(new customControl());
+
+                function getCircleMarkers(bounds){
+                    var layers = [];
+                    drawnItems.eachLayer((layer)=>{
+                        if(layer instanceof L.Circle){ //only circleMarkers, exclude Circles
+                            if(bounds.contains(layer.getLatLng())){
+                                layers.push(layer);
+                            }
+                        }
+                    });
+                    console.log(layers);
+                    return layers;
+                }
+            }
+            
+            if (this.heatmapLayer) {
+                this.map.removeLayer(this.heatmapLayer);
+            }
+
+            // Create the heatmap layer with the loaded data
+            this.heatmapLayer = L.heatLayer(this.heatmap_data, {
+                radius: 25, // Radius of each "point" of the heatmap
+                blur: 15,   // Amount of blur
+                maxZoom: 17 // Max zoom level for the heatmap layer
+            }).addTo(this.map);
+        }
+    }
+};
+// Mount the Vue app to the element with id 'app'
 app.vue = Vue.createApp(app.data).mount("#app");
 
 app.load_data = function () {
+    app.vue.loading = true;
     axios.get(get_heatmap_url, {
         params: {
             bird_name: app.vue.search_query
         }
-    }).then(function (r) {
-        app.vue.heatmap_data = r.data.density;
-        if (!app.vue.map) {
-            // Initialize the map if not already initialized
-            app.vue.map = L.map('map').setView([37.7749, -122.4194], 13);
-            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-                attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            }).addTo(app.vue.map);
-
-            var startPoint = null;
-            var drawnRectangle = null;
-            var markers = []; // Array to store markers
-
-            // Listen for clicks on the map
-            app.vue.map.on('click', function (e) {
-                var clickedPoint = e.latlng;
-
-                // Remove all existing markers
-                for (var i = 0; i < markers.length; i++) {
-                    app.vue.map.removeLayer(markers[i]);
-                }
-                markers = []; // Clear the markers array
-
-                if (drawnRectangle) {
-                    app.vue.map.removeLayer(drawnRectangle);
-                }
-
-                if (!startPoint) {
-                    // First click: store the starting point and add marker
-                    startPoint = clickedPoint;
-                    markers.push(L.marker(clickedPoint).addTo(app.vue.map)); // Add marker to markers array
-                } else {
-                    // Second click: draw the rectangle, reset starting point, and add marker
-                    var rectBounds = [startPoint, clickedPoint];
-                    drawnRectangle = L.rectangle(rectBounds, {color: 'red'}).addTo(app.vue.map);
-                    startPoint = null; // Reset the starting point for the next rectangle
-                    markers.push(L.marker(clickedPoint).addTo(app.vue.map)); // Add marker to markers array
-                }
-            });
-        }
-
-        // Remove the existing heatmap layer if it exists
-        if (app.vue.heatmapLayer) {
-            app.vue.map.removeLayer(app.vue.heatmapLayer);
-        }
-
-        // Create the heatmap layer with the loaded data
-        app.vue.heatmapLayer = L.heatLayer(app.vue.heatmap_data, {
-            radius: 25, // Radius of each "point" of the heatmap
-            blur: 15,   // Amount of blur
-            maxZoom: 17 // Max zoom level for the heatmap layer
-        }).addTo(app.vue.map);
+    }).then((response) => {
+        app.vue.heatmap_data = response.data.density;
+        app.vue.render_heatmap();
+        app.vue.loading = true;
+    }).catch((error) => {
+        console.error('Error loading heatmap data:', error);
     });
 }
 

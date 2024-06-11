@@ -9,10 +9,10 @@ app.data = {
         return {
             species: [],
             region: "California",
-            border_top: 42.00,
-            border_down: 32.50,
-            border_left: -124.4,
-            border_right: -114.1,
+            border_top: null,
+            border_down: null,
+            border_left: null,
+            border_right: null,
             checklist_num: null,
             num_sightings: null,
             selected_species: [],
@@ -27,9 +27,56 @@ app.data = {
             total_pages: null,
             bird_chart_instance: null,
             bird_chart_label_name: null,
+            location : null,
+            loading : true,
         };
     },
     methods: {
+        stats_redirect: function () {
+            axios.get(handle_redirect_stats_url, {}).then(function (r) {
+                window.location.href = r.data.url;
+            });
+        },
+        checklists_redirect: function () {
+            axios.get(handle_redirect_checklists_url, {
+            }).then(function (r) {
+                window.location.href = r.data.url;
+            });
+        },
+        locations_redirect: function () {
+            axios.get(handle_redirect_locations_url, {
+                params: {
+                    north: 90,   
+                    south: -90, 
+                    east: 180,   
+                    west: -180,  
+                }
+            }).then(function (r) {
+                window.location.href = r.data.url;
+            });
+        },
+        location_name: function () {
+            let self = this;
+            // Assuming you have the bounding box coordinates stored in variables: north, south, east, west
+            let centerLatitude = (parseFloat(this.border_top) + parseFloat(this.border_down)) / 2;
+            let centerLongitude = (parseFloat(this.border_right) + parseFloat(this.border_left)) / 2;
+            let reverse_geocoding_url = `https://nominatim.openstreetmap.org/reverse?lat=${centerLatitude}&lon=${centerLongitude}&format=json`;
+
+            // Perform reverse geocoding to get the location
+            axios.get(reverse_geocoding_url, {
+                params: {
+                    lat: centerLatitude,
+                    lon: centerLongitude,
+                    format: 'json'
+                }
+            }).then(function (response) {
+                self.location = response.data.address; // Extract the address or location information
+                console.log("Location:", self.location);
+                // Now, you can use the location information as needed
+            }).catch(function (error) {
+                console.error("Error fetching location:", error);
+            });
+        },
         find_item_idx: function(id) {
             for (let i = 0; i < this.selected_species.length; i++) {
                 if(this.selected_species[i].sightings.id === id) {
@@ -67,7 +114,6 @@ app.data = {
                 self.bird_data = r.data.bird_data;
                 self.bird_chart_label_name = r.data.bird_name;
                 self.render_chart(r.data.bird_name);
-                // self.chart_loading = false
             });
         },
         render_chart: function(bird_name) {
@@ -150,12 +196,7 @@ app.vue = Vue.createApp(app.data).mount("#app");
 
 app.load_data = function () {
     axios.get(get_species_url, {
-        params: {
-            top: app.vue.border_top,
-            bottom: app.vue.border_down,
-            left: app.vue.border_left,
-            right: app.vue.border_right
-        }
+
     }).then(function (r) {
         app.vue.species = r.data.species;
         app.vue.top_contributors = r.data.top_contributors;
@@ -163,8 +204,11 @@ app.load_data = function () {
         app.vue.num_sightings = r.data.num_sightings;
         app.vue.total_items = r.data.species.length;
         app.vue.total_pages = Math.ceil(app.vue.total_items / app.vue.items_per_page);
+        app.vue.border_top = r.data.top;
+        app.vue.border_down = r.data.bottom;
+        app.vue.border_left = r.data.left;
+        app.vue.border_right = r.data.right;
         
-        // Handle case where there's only one page
         if (app.vue.total_pages <= 1) {
             app.vue.first_page = true;
             app.vue.last_page = true;
@@ -177,16 +221,14 @@ app.load_data = function () {
         const first_entry = app.vue.selected_species[0].sightings.id;
         app.vue.bird_chart_label_name = app.vue.selected_species[0].sightings.name;
         app.vue.display_location_data(first_entry);
+        app.vue.location_name();
+        app.vue.loading = false;
     });
 };
 
 app.load_radar_data = function () {
     axios.get(get_radar_data_url, {
         params: {
-            top: app.vue.border_top,
-            bottom: app.vue.border_down,
-            left: app.vue.border_left,
-            right: app.vue.border_right,
             name: '',
         }
     }).then(function (r) {

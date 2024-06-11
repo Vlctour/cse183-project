@@ -8,6 +8,7 @@ let app = {};
 app.data = {    
     data: function() {
         return {
+            map: null,
             checklist: [],
             selected_checklist: [],
             bird_count: {},
@@ -16,7 +17,7 @@ app.data = {
             new_duration: null,     
             new_latitude: null,      
             new_longitude: null,    
-            validationError: false, // New property to track validation state
+            validationError: false, 
             showModal: false,
             search_query: null,
             page_number: 1,
@@ -29,6 +30,29 @@ app.data = {
     },
     methods: {
         // Complete as you see fit.
+        stats_redirect: function () {
+            axios.get(handle_redirect_stats_url, {}).then(function (r) {
+                window.location.href = r.data.url;
+            });
+        },
+        checklists_redirect: function () {
+            axios.get(handle_redirect_checklists_url, {
+            }).then(function (r) {
+                window.location.href = r.data.url;
+            });
+        },
+        locations_redirect: function () {
+            axios.get(handle_redirect_locations_url, {
+                params: {
+                    north: 90,   
+                    south: -90, 
+                    east: 180,   
+                    west: -180,  
+                }
+            }).then(function (r) {
+                window.location.href = r.data.url;
+            });
+        },
         update_page: function(val) {
             let last_page = this.total_pages;
             if ((this.page_number == 1 && val == -1) || (this.page_number >= last_page && val == 1)) {
@@ -57,6 +81,7 @@ app.data = {
         },
         openModal: function() {
             this.showModal = true;
+            this.render_map();
           },
         closeModal: function() {
             this.showModal = false;
@@ -114,7 +139,30 @@ app.data = {
                 self.bird_count = r.data.bird_count;
             });
             
-        }
+        },
+        render_map: function() {
+            if (!this.map) {
+                this.map = L.map('map').setView([36.974117, -122.030792], 13);
+                L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                }).addTo(this.map);
+        
+                var marker = null;
+        
+                // Listen for clicks on the map
+                this.map.on('click', function (e) {
+                    if (marker) {
+                        this.map.removeLayer(marker);
+                    }
+                    marker = L.marker(e.latlng).addTo(this.map);
+        
+                    // Update Vue data
+                    this.new_latitude = e.latlng.lat;
+                    this.new_longitude = e.latlng.lng;
+                }.bind(this)); 
+            }
+        }        
     }
 };
 

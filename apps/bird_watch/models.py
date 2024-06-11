@@ -6,9 +6,7 @@ import datetime
 import csv
 from .common import db, Field, auth
 from pydal.validators import *
-import re
 import random
-
 
 
 path="/Users/shaun/Desktop/CSE 183/cse183-project/apps/bird_watch/sample_data/"
@@ -26,6 +24,7 @@ def get_observer_id():
         return username
     return None 
 
+# Generates new event id that isnt already in the db
 def generate_event_id():
     validator = IS_NOT_IN_DB(db, 'checklists.event_id')
 
@@ -33,7 +32,8 @@ def generate_event_id():
         new_event_id = f'S{random.randint(80000000, 89999999)}'
         if validator(new_event_id)[1] is None:
             return new_event_id
-        
+
+# given time in minutes, converts it
 def convert_time(time):
     hours = time//60
     minutes = time % 60
@@ -47,16 +47,10 @@ db.define_table(
 
 db.define_table(
     'sightings',
-    Field('event_id', writable=False), # figure out
+    Field('event_id', writable=False),
     Field('name', requires=IS_NOT_EMPTY()),
     Field('count', default="X"),
 )
-
-# db.define_table(
-#     'users',
-#     Field('email', 'string'),
-#     Field('observer_id', 'string', unique=True),  
-# )
 
 db.define_table(
     'checklists',
@@ -65,11 +59,12 @@ db.define_table(
     Field('longitude', 'float'),
     Field('date', 'date'),
     Field('time', 'time'),
-    Field('observer_id', 'string'),  # Reference to the users table
+    Field('observer_id', 'string'),
     Field('duration', default=0.0),
 )
 
-
+# populate tables with given data
+# make sure to skip header using next()
 if db(db.species).isempty():
     filepath=f"{path}species.csv"
     with open(filepath, 'r') as f:
@@ -88,13 +83,13 @@ if db(db.sightings).isempty():
                                 name=row[1],
                                 count=row[2])                
 
-
+# add pre-existing users to auth_users while populating checklists
 if db(db.checklists).isempty():
     filepath=f"{path}checklists.csv"    
     with open(filepath, 'r') as f:
         reader = csv.reader(f)
-        next(reader)  # Skip the header row
-        unique_observers = set()  # Store unique observer_ids to avoid duplicate insertions
+        next(reader)
+        unique_observers = set()
         for row in reader:
             email = f"{row[5]}@mail.com"
             observer_id = row[5]
@@ -104,12 +99,6 @@ if db(db.checklists).isempty():
                 email=email,
                 first_name=row[5],
                 password='')
-                # Insert the user
-                # db.users.insert(
-                #     email=email,
-                #     observer_id=observer_id
-                # )
-                # Add observer_id to the set of unique observers
                 unique_observers.add(observer_id)
 
     with open(filepath, 'r') as f:
