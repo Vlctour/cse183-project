@@ -4,7 +4,6 @@
 [v-cloak] {
     display: none;
 }
-
 </style>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -13,7 +12,6 @@
 
 <div class="section">
     <div id="app" v-cloak>
-        <!-- Put your Vue.js template here -->
         <div class="card mb-4">
             <div class="card-content">
                 <nav class="navbar" role="navigation" aria-label="main navigation">
@@ -137,7 +135,6 @@
 </div>
 
 [[block page_scripts]]
-<!-- Loads the index-specific JS for Vue -->
 <script>
 let my_callback_url = "[[=XML(my_callback_url)]]";
 let get_stats_url = "[[=XML(get_stats_url)]]";

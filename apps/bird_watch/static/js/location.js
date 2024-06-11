@@ -1,10 +1,8 @@
 "use strict";
 
-// This will be the object that will contain the Vue attributes
-// and be used to initialize it.
 let app = {};
 
-app.data = {    
+app.data = {
     data: function() {
         return {
             species: [],
@@ -46,10 +44,10 @@ app.data = {
         locations_redirect: function () {
             axios.get(handle_redirect_locations_url, {
                 params: {
-                    north: 90,   
-                    south: -90, 
-                    east: 180,   
-                    west: -180,  
+                    north: 90,
+                    south: -90,
+                    east: 180,
+                    west: -180,
                 }
             }).then(function (r) {
                 window.location.href = r.data.url;
@@ -57,12 +55,11 @@ app.data = {
         },
         location_name: function () {
             let self = this;
-            // Assuming you have the bounding box coordinates stored in variables: north, south, east, west
             let centerLatitude = (parseFloat(this.border_top) + parseFloat(this.border_down)) / 2;
             let centerLongitude = (parseFloat(this.border_right) + parseFloat(this.border_left)) / 2;
             let reverse_geocoding_url = `https://nominatim.openstreetmap.org/reverse?lat=${centerLatitude}&lon=${centerLongitude}&format=json`;
 
-            // Perform reverse geocoding to get the location
+            // get location name
             axios.get(reverse_geocoding_url, {
                 params: {
                     lat: centerLatitude,
@@ -70,11 +67,9 @@ app.data = {
                     format: 'json'
                 }
             }).then(function (response) {
-                self.location = response.data.address; // Extract the address or location information
-                console.log("Location:", self.location);
-                // Now, you can use the location information as needed
+                self.location = response.data.address;
             }).catch(function (error) {
-                console.error("Error fetching location:", error);
+                console.error("Error fetching location name:", error);
             });
         },
         find_item_idx: function(id) {
@@ -121,11 +116,10 @@ app.data = {
             const labels = this.bird_data.map(entry => entry.checklists.date);
             const data = this.bird_data.map(entry => entry.count);
 
-            // Destroy existing chart instance if it exists
             if (this.bird_chart_instance) {
                 this.bird_chart_instance.destroy();
             }
-            
+
             this.bird_chart_instance = new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -137,9 +131,9 @@ app.data = {
                         backgroundColor: 'rgba(75, 192, 192, 0.2)',
                         borderWidth: 1,
                         fill: true,
-                        stepped: true, // Enable stepped line
-                        pointRadius: 5, // Set point radius
-                        pointHoverRadius: 8 // Set point hover radius
+                        stepped: true,
+                        pointRadius: 5,
+                        pointHoverRadius: 8
                     }]
                 },
                 options: {
@@ -196,7 +190,6 @@ app.vue = Vue.createApp(app.data).mount("#app");
 
 app.load_data = function () {
     axios.get(get_species_url, {
-
     }).then(function (r) {
         app.vue.species = r.data.species;
         app.vue.top_contributors = r.data.top_contributors;
@@ -208,7 +201,6 @@ app.load_data = function () {
         app.vue.border_down = r.data.bottom;
         app.vue.border_left = r.data.left;
         app.vue.border_right = r.data.right;
-        
         if (app.vue.total_pages <= 1) {
             app.vue.first_page = true;
             app.vue.last_page = true;
@@ -217,7 +209,7 @@ app.load_data = function () {
         const start = (app.vue.page_number - 1) * app.vue.items_per_page;
         const end = app.vue.page_number * app.vue.items_per_page;
         app.vue.selected_species = app.vue.species.slice(start, end);
-        
+
         const first_entry = app.vue.selected_species[0].sightings.id;
         app.vue.bird_chart_label_name = app.vue.selected_species[0].sightings.name;
         app.vue.display_location_data(first_entry);
@@ -228,9 +220,6 @@ app.load_data = function () {
 
 app.load_radar_data = function () {
     axios.get(get_radar_data_url, {
-        params: {
-            name: '',
-        }
     }).then(function (r) {
         r.data.radar_data.forEach(item => {
             const date = new Date(item.date);

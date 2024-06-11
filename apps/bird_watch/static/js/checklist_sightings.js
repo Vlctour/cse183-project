@@ -1,9 +1,6 @@
 "use strict";
 
-// This will be the object that will contain the Vue attributes
-// and be used to initialize it.
 let app = {};
-
 
 app.data = {    
     data: function() {
@@ -29,15 +26,7 @@ app.data = {
 
 app.vue = Vue.createApp(app.data).mount("#app");
 
-app.load_data = function () {
-    return
-    // axios.get(my_callback_url).then(function (r) {
-    //     app.vue.my_value = r.data.my_value;
-    // });
-}
-
-app.load_data();
-
+// if user failed to fill out modal, remember state of keeping modal open/closed
 document.addEventListener("DOMContentLoaded", function() {
     const addButton = document.getElementById('addButton');
     if (window.location.href.includes('/edit')) {

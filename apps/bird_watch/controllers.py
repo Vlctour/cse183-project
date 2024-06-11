@@ -255,6 +255,7 @@ def add_checklist():
     event_id = generate_event_id()
     latitude = request.json.get("latitude")
     longitude = request.json.get("longitude")
+    print("the lat and long", latitude, longitude)
     date = request.json.get("date")
     time = request.json.get("time")
     duration = abs(float(request.json.get("duration")))

@@ -1,23 +1,20 @@
 "use strict";
 
-// This will be the object that will contain the Vue attributes
-// and be used to initialize it.
 let app = {};
 
-
-app.data = {    
+app.data = {
     data: function() {
         return {
             map: null,
             checklist: [],
             selected_checklist: [],
             bird_count: {},
-            new_date: null,         
-            new_time: null,         
-            new_duration: null,     
-            new_latitude: null,      
-            new_longitude: null,    
-            validationError: false, 
+            new_date: null,
+            new_time: null,
+            new_duration: null,
+            new_latitude: null,
+            new_longitude: null,
+            validationError: false,
             showModal: false,
             search_query: null,
             page_number: 1,
@@ -29,7 +26,6 @@ app.data = {
         };
     },
     methods: {
-        // Complete as you see fit.
         stats_redirect: function () {
             axios.get(handle_redirect_stats_url, {}).then(function (r) {
                 window.location.href = r.data.url;
@@ -88,7 +84,6 @@ app.data = {
             this.validationError = false;
         },
         handle_redirect: function(event_id) {
-            // return `checklist/sightings?event_id=${event_id}`;
             axios.get(handle_redirect_url, {
                 params: {
                     event_id: event_id
@@ -96,11 +91,9 @@ app.data = {
             }).then(function (r) {
                 window.location.href = r.data.url; 
             });
-            // return `/checklist/sightings/${event_id}`
         },
         save_button: function() {
             this.validationError = false;
-
             if (this.new_date === null || this.new_time === null || this.new_duration === null || this.new_latitude === null || this.new_longitude === null) {
                 this.validationError = true;
                 return;
@@ -117,7 +110,7 @@ app.data = {
                 duration: self.new_duration,     
                 latitude: self.new_latitude,      
                 longitude: self.new_longitude,    
- 
+
             }).then(function (r) {
                 app.load_data();
                 self.new_date = null;       
@@ -125,7 +118,7 @@ app.data = {
                 self.new_duration = null;     
                 self.new_latitude = null;    
                 self.new_longitude = null;
-                
+
             });
         },
         search_checklist: function() {
@@ -138,7 +131,7 @@ app.data = {
                 self.checklist = r.data.checklist;
                 self.bird_count = r.data.bird_count;
             });
-            
+
         },
         render_map: function() {
             if (!this.map) {
@@ -147,17 +140,15 @@ app.data = {
                     maxZoom: 19,
                     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                 }).addTo(this.map);
-        
+
                 var marker = null;
-        
-                // Listen for clicks on the map
+
                 this.map.on('click', function (e) {
                     if (marker) {
                         this.map.removeLayer(marker);
                     }
+
                     marker = L.marker(e.latlng).addTo(this.map);
-        
-                    // Update Vue data
                     this.new_latitude = e.latlng.lat;
                     this.new_longitude = e.latlng.lng;
                 }.bind(this)); 
@@ -172,13 +163,10 @@ app.load_data = function () {
     axios.get(get_checklist_url, {
     }).then(function (r) {
         app.vue.checklist = r.data.checklist;
-        // console.log(r.data.checklist);
         app.vue.bird_count = r.data.bird_count;
-
         app.vue.total_items = r.data.checklist.length;
         app.vue.total_pages = Math.ceil(app.vue.total_items / app.vue.items_per_page);
-        
-        // Handle case where there's only one page
+        // handle case where there's only one page
         if (app.vue.total_pages <= 1) {
             app.vue.first_page = true;
             app.vue.last_page = true;

@@ -16,15 +16,15 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(207, 187, 187, 0.2); /* Semi-transparent black */
+    background-color: rgba(207, 187, 187, 0.2);
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
 .loading-bar {
-    width: 50%; /* Adjust the width as needed */
-    max-width: 300px; /* Limit the maximum width */
+    width: 50%;
+    max-width: 300px;
 }
 
 .modal.is-active {
@@ -54,7 +54,7 @@
                     <div class="navbar-end">
                         <a class="navbar-item" @click="stats_redirect">Stats</a>
                         <a class="navbar-item" @click="checklists_redirect">Checklists</a>
-                        <a class="navbar-item" @click="locations_redirect">Locations</a>
+                        <a class="navbar-item" @click="reset_coord_data">Locations</a>
                     </div>
                 </div>
             </nav>

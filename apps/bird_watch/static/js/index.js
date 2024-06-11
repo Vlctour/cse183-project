@@ -38,6 +38,13 @@ app.data = {
                 window.location.href = r.data.url;
             });
         },
+        reset_coord_data: function() {
+            this.north = 90;
+            this.south = -90;  
+            this.east = 180;  
+            this.west = -180; 
+            this.locations_redirect();
+        },
         locations_redirect: function () {
             let self = this;
             axios.get(handle_redirect_locations_url, {
@@ -76,7 +83,9 @@ app.data = {
             });
         },
         openModal: function() {
-            this.showModal = true;
+            if (this.coords) {
+                this.showModal = true;
+            }
           },
         closeModal: function() {
             this.showModal = false;
@@ -163,14 +172,14 @@ app.data = {
                 });
                 var customControl = L.Control.extend({
                     options: {
-                        position: 'topleft' // Change position as needed
+                        position: 'topright' // Change position as needed
                     },
                     onAdd: function () {
                         var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
                         
                         // Add your custom buttons here
-                        container.innerHTML += '<button onclick="app.vue.stats_redirect()">statistics on region</button>';
-                        container.innerHTML += '<button onclick="app.vue.openModal()">submit a checklist</button>';                        
+                        container.innerHTML += '<button onclick="app.vue.locations_redirect()">Location Data On Region</button>';
+                        container.innerHTML += '<button onclick="app.vue.openModal()">Submit Checklist At Pin</button>';                        
                         return container;
                     }
                 });

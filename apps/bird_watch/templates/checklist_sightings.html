@@ -6,7 +6,6 @@
 }
 </style>
 
-<!-- Include Bulma CSS -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.3/css/bulma.min.css">
 <div class="section" id="app" v-cloak>
     <div class="level">
@@ -22,7 +21,6 @@
     <div class="modal" :class="{'is-active': showModal}">
         <div class="modal-background"></div>
             <div class="modal-content">
-            <!-- Any other Bulma elements you want -->
                 <div class="box">
                     [[=form]]
                 </div>
@@ -33,7 +31,6 @@
 </div>
 
 [[block page_scripts]]
-<!-- Loads the index-specific js for Vue -->
 <script>
     let show_modal = [[=showModal]];
     let handle_redirect_checklists_url = "[[=XML(handle_redirect_checklists_url)]]";

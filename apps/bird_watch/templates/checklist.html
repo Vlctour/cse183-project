@@ -5,7 +5,7 @@
     display: none;
 }
 #map {
-        height: 300px; /* Ensure the height is sufficient */
+        height: 300px;
     }
 .input.is-danger {
     border-color: #ff3860;
@@ -16,7 +16,6 @@
 </style>
 
 <div class="section" id="app" v-cloak>
-    <!-- Put here your Vue.js template -->
     <div class="card mb-4">
         <div class="card-content">
             <nav class="navbar" role="navigation" aria-label="main navigation">
@@ -24,12 +23,14 @@
                     <a class="navbar-item" href="#">
                         <h1 class="title"><i class="fa-solid fa-clipboard-list"></i> Checklists</h1>
                     </a>
-                    <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
+                    <!-- Hamburger menu button -->
+                    <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
                         <span aria-hidden="true"></span>
                         <span aria-hidden="true"></span>
                         <span aria-hidden="true"></span>
                     </a>
                 </div>
+                <!-- Hamburger menu content -->
                 <div id="navbarBasicExample" class="navbar-menu">
                     <div class="navbar-end">
                         <a class="navbar-item" @click="stats_redirect">Stats</a>
@@ -40,12 +41,12 @@
             </nav>
         </div>
     </div>
+    
     <div class="card">
         <div class="card-content">
             <div class="field has-addons">
                 <div class="control">
                     <button class="button is-primary" @click="openModal"><i class="fa-solid fa-plus"></i> New</button>
-                    
                     <div class="modal" :class="{ 'is-active': showModal }">
                         <div class="modal-background" @click="closeModal"></div>
                         <div class="modal-content">
@@ -168,6 +169,7 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
       crossorigin=""/>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
         crossorigin=""></script>
