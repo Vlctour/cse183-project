@@ -7,7 +7,6 @@ import csv
 from .common import db, Field, auth
 from pydal.validators import *
 import random
-import os
 
 
 path = "apps/bird_watch/sample_data/"
@@ -25,7 +24,7 @@ def get_observer_id():
         return username
     return None 
 
-# Generates new event id that isnt already in the db
+# generates new event id that isnt already in the db
 def generate_event_id():
     validator = IS_NOT_IN_DB(db, 'checklists.event_id')
 
@@ -94,7 +93,7 @@ if db(db.checklists).isempty():
         for row in reader:
             email = f"{row[5]}@mail.com"
             observer_id = row[5]
-            # Check if the observer_id is unique and not already inserted
+            # check if the observer_id is unique and not already inserted
             if observer_id not in unique_observers:
                 db.auth_user.insert(
                 email=email,
