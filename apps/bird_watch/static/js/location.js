@@ -30,6 +30,12 @@ app.data = {
         };
     },
     methods: {
+        format_time: function(time) {
+            let hours = Math.floor(time / 60);
+            let minutes = time % 60;
+            let seconds = 0;
+            return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        },
         stats_redirect: function () {
             axios.get(handle_redirect_stats_url, {}).then(function (r) {
                 window.location.href = r.data.url;
@@ -214,13 +220,15 @@ app.load_data = function () {
         const start = (app.vue.page_number - 1) * app.vue.items_per_page;
         const end = app.vue.page_number * app.vue.items_per_page;
         app.vue.selected_species = app.vue.species.slice(start, end);
-
-        const first_entry = app.vue.selected_species[0].sightings.id;
-        app.vue.bird_chart_label_name = app.vue.selected_species[0].sightings.name;
-        app.vue.display_location_data(first_entry);
+        if (app.vue.selected_species.length != 0) {
+            const first_entry = app.vue.selected_species[0].sightings.id;
+            app.vue.bird_chart_label_name = app.vue.selected_species[0].sightings.name;
+            app.vue.display_location_data(first_entry);
+        }
         app.vue.location_name();
         app.vue.loading = false;
     });
+
 };
 
 app.load_radar_data = function () {
