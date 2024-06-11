@@ -95,7 +95,7 @@ app.data = {
             this.is_loading = true;
             app.load_data();
         },
-        search_table: function(query) {
+        search_table: function() {
             app.load_data();
             app.vue.search_query = null;
             app.vue.page_number = 1;

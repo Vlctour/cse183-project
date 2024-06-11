@@ -1,7 +1,5 @@
 "use strict";
 
-// This will be the object that will contain the Vue attributes
-// and be used to initialize it.
 let app = {};
 
 app.data = {
@@ -129,10 +127,7 @@ app.data = {
                 }));
                 this.map.on('draw:created', function (event) {
                     var layer = event.layer;
-                    
-                    // Check if the layer is a marker
                     if(layer instanceof L.Marker){
-                        // Check if there are existing markers and remove them
                         drawnItems.eachLayer(function(existingLayer) {
                             if(existingLayer instanceof L.Marker) {
                                 drawnItems.removeLayer(existingLayer);
@@ -140,12 +135,9 @@ app.data = {
                         });
 
                         app.vue.coords = layer.getLatLng();
-                        // console.log("lat lang is:", this.coords.lat, this.coords.lng)
                     }
 
-                    // Check if the layer is a rectangle
                     if(layer instanceof L.Rectangle){
-                        // Check if there are existing rectangles and remove them
                         drawnItems.eachLayer(function(existingLayer) {
                             if(existingLayer instanceof L.Rectangle) {
                                 drawnItems.removeLayer(existingLayer);
@@ -157,13 +149,10 @@ app.data = {
                         app.vue.north = bounds.getNorth();
                         app.vue.south = bounds.getSouth();
                         app.vue.west = bounds.getWest();
-                        app.vue.east = bounds.getEast();
-                        
-                        // console.log(bounds);
+                        app.vue.east = bounds.getEast();                        
                     }
                     
                     drawnItems.addLayer(layer);
-                    console.log("left draw:created");
                 });
                 this.map.on('draw:deleted', function (event) {
                     var layers = event.layers;
@@ -177,12 +166,10 @@ app.data = {
                 });
                 var customControl = L.Control.extend({
                     options: {
-                        position: 'topright' // Change position as needed
+                        position: 'topright'
                     },
                     onAdd: function () {
                         var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
-                        
-                        // Add your custom buttons here
                         container.innerHTML += '<button onclick="app.vue.locations_redirect()">Location Data On Region</button>';
                         container.innerHTML += '<button onclick="app.vue.openModal()">Submit Checklist At Pin</button>';                        
                         return container;
@@ -190,35 +177,21 @@ app.data = {
                 });
 
                 this.map.addControl(new customControl());
-
-                function getCircleMarkers(bounds){
-                    var layers = [];
-                    drawnItems.eachLayer((layer)=>{
-                        if(layer instanceof L.Circle){ //only circleMarkers, exclude Circles
-                            if(bounds.contains(layer.getLatLng())){
-                                layers.push(layer);
-                            }
-                        }
-                    });
-                    console.log(layers);
-                    return layers;
-                }
             }
             
             if (this.heatmapLayer) {
                 this.map.removeLayer(this.heatmapLayer);
             }
 
-            // Create the heatmap layer with the loaded data
             this.heatmapLayer = L.heatLayer(this.heatmap_data, {
-                radius: 25, // Radius of each "point" of the heatmap
-                blur: 15,   // Amount of blur
-                maxZoom: 17 // Max zoom level for the heatmap layer
+                radius: 25,
+                blur: 15,
+                maxZoom: 17
             }).addTo(this.map);
         }
     }
 };
-// Mount the Vue app to the element with id 'app'
+
 app.vue = Vue.createApp(app.data).mount("#app");
 
 app.load_data = function () {
