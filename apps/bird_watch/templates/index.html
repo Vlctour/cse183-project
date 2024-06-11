@@ -41,7 +41,7 @@
         <div class="card-content">
             <nav class="navbar" role="navigation" aria-label="main navigation">
                 <div class="navbar-brand">
-                    <a class="navbar-item" href="#">
+                    <a class="navbar-item">
                         <h1 class="title"><i class="fa-solid fa-earth-americas"></i>Index</h1>
                     </a>
                     <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
@@ -52,6 +52,7 @@
                 </div>
                 <div id="navbarBasicExample" class="navbar-menu">
                     <div class="navbar-end">
+                        <a class="navbar-item" @click="index_redirect">Home</a>
                         <a class="navbar-item" @click="stats_redirect">Stats</a>
                         <a class="navbar-item" @click="checklists_redirect">Checklists</a>
                         <a class="navbar-item" @click="reset_coord_data">Locations</a>
@@ -132,6 +133,7 @@
     let handle_redirect_stats_url = "[[=XML(handle_redirect_stats_url)]]";
     let handle_redirect_locations_url = "[[=XML(handle_redirect_locations_url)]]";
     let handle_redirect_checklists_url = "[[=XML(handle_redirect_checklists_url)]]";
+    let handle_redirect_index_url = "[[=XML(handle_redirect_index_url)]]";
     let get_heatmap_url = "[[=XML(get_heatmap_url)]]";
     let add_checklist_url = "[[=XML(add_checklist_url)]]";
 </script>

@@ -17,7 +17,7 @@
         <div class="card-content">
             <nav class="navbar" role="navigation" aria-label="main navigation">
                 <div class="navbar-brand">
-                    <a class="navbar-item" href="#">
+                    <a class="navbar-item">
                         <h1 class="title">
                             <i class="fa-solid fa-location-dot"></i> 
                             Region: 
@@ -36,6 +36,7 @@
                 </div>
                 <div id="navbarBasicExample" class="navbar-menu">
                     <div class="navbar-end">
+                        <a class="navbar-item" @click="index_redirect">Home</a>
                         <a class="navbar-item" @click="stats_redirect">Stats</a>
                         <a class="navbar-item" @click="checklists_redirect">Checklists</a>
                         <a class="navbar-item" @click="locations_redirect">Locations</a>
@@ -147,6 +148,8 @@
     let handle_redirect_stats_url = "[[=XML(handle_redirect_stats_url)]]";
     let handle_redirect_locations_url = "[[=XML(handle_redirect_locations_url)]]";
     let handle_redirect_checklists_url = "[[=XML(handle_redirect_checklists_url)]]";
+    let handle_redirect_index_url = "[[=XML(handle_redirect_index_url)]]";
+
 </script>
 <script src="js/location.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

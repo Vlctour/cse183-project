@@ -16,7 +16,7 @@
             <div class="card-content">
                 <nav class="navbar" role="navigation" aria-label="main navigation">
                     <div class="navbar-brand">
-                        <a class="navbar-item" href="#">
+                        <a class="navbar-item">
                             <h1 class="title"><i class="fa-solid fa-dove"></i> Stats</h1>
                         </a>
                         <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
@@ -27,6 +27,7 @@
                     </div>
                     <div id="navbarBasicExample" class="navbar-menu">
                         <div class="navbar-end">
+                            <a class="navbar-item" @click="index_redirect">Home</a>
                             <a class="navbar-item" @click="stats_redirect">Stats</a>
                             <a class="navbar-item" @click="checklists_redirect">Checklists</a>
                             <a class="navbar-item" @click="locations_redirect">Locations</a>
@@ -143,6 +144,8 @@ let display_data_url = "[[=XML(display_data_url)]]";
 let handle_redirect_stats_url = "[[=XML(handle_redirect_stats_url)]]";
 let handle_redirect_locations_url = "[[=XML(handle_redirect_locations_url)]]";
 let handle_redirect_checklists_url = "[[=XML(handle_redirect_checklists_url)]]";
+let handle_redirect_index_url = "[[=XML(handle_redirect_index_url)]]";
+
 </script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="

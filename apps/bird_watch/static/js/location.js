@@ -35,6 +35,11 @@ app.data = {
                 window.location.href = r.data.url;
             });
         },
+        index_redirect: function() {
+            axios.get(handle_redirect_index_url, {}).then(function (r) {
+                window.location.href = r.data.url;
+            });
+        },
         checklists_redirect: function () {
             axios.get(handle_redirect_checklists_url, {
             }).then(function (r) {

@@ -34,6 +34,11 @@ app.data = {
         }
     },
     methods: {
+        index_redirect: function() {
+            axios.get(handle_redirect_index_url, {}).then(function (r) {
+                window.location.href = r.data.url;
+            });
+        },
         stats_redirect: function () {
             axios.get(handle_redirect_stats_url, {}).then(function (r) {
                 window.location.href = r.data.url;

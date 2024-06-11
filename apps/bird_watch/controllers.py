@@ -52,6 +52,7 @@ def index():
         handle_redirect_stats_url = URL('handle_redirect_stats', signer=url_signer),
         handle_redirect_locations_url = URL('handle_redirect_locations', signer=url_signer),
         handle_redirect_checklists_url = URL('handle_redirect_checklists',  signer=url_signer),
+        handle_redirect_index_url = URL('handle_redirect_index', signer=url_signer),
     )
 
 @action('checklist')
@@ -67,6 +68,7 @@ def checklist():
         handle_redirect_stats_url = URL('handle_redirect_stats', signer=url_signer),
         handle_redirect_locations_url = URL('handle_redirect_locations', signer=url_signer),
         handle_redirect_checklists_url = URL('handle_redirect_checklists',  signer=url_signer),
+        handle_redirect_index_url = URL('handle_redirect_index', signer=url_signer),
     )
 
 
@@ -83,6 +85,7 @@ def stats():
         handle_redirect_stats_url = URL('handle_redirect_stats', signer=url_signer),
         handle_redirect_locations_url = URL('handle_redirect_locations', signer=url_signer),
         handle_redirect_checklists_url = URL('handle_redirect_checklists',  signer=url_signer),
+        handle_redirect_index_url = URL('handle_redirect_index', signer=url_signer),
         observer=observer_id,
         observer_email=observer_email
     )
@@ -103,6 +106,7 @@ def location():
         handle_redirect_stats_url = URL('handle_redirect_stats', signer=url_signer),
         handle_redirect_locations_url = URL('handle_redirect_locations', signer=url_signer),
         handle_redirect_checklists_url = URL('handle_redirect_checklists',  signer=url_signer),
+        handle_redirect_index_url = URL('handle_redirect_index', signer=url_signer),
     )
 
 # handle creating a url to checklist sightings with the correct event id selected from checklists page
@@ -113,6 +117,11 @@ def handle_redirect():
     url = URL("checklist/sightings/" + event_id)
     return dict(url=url)
 
+@action('handle_redirect_index', method="GET")
+@action.uses(db, auth, url_signer)
+def handle_redirect_index():
+    url = URL("index")
+    return dict(url=url)
 
 @action('handle_redirect_stats', method="GET")
 @action.uses(db, auth, url_signer)
@@ -274,13 +283,18 @@ def add_checklist():
 def search_checklist():
     observer_id = get_observer_id()
     bird_name = request.params.get('bird_name')
+
+    # Base query for checklists
     query = (
         (db.checklists.observer_id == observer_id) &
-        (db.checklists.event_id == db.sightings.event_id) &
-        (db.sightings.name.contains(bird_name))
+        (db.checklists.event_id == db.sightings.event_id)
     )
 
-    # query1 get all the checklists tied to an observer and the bird being searched
+    # Add bird name condition if bird_name is not empty
+    if bird_name:
+        query &= (db.sightings.name.contains(bird_name))
+
+    # Query 1: get all the checklists tied to an observer and the bird being searched
     rows = db(query).select(
         db.checklists.event_id,
         db.checklists.latitude,
@@ -292,15 +306,20 @@ def search_checklist():
         distinct=True
     ).as_list()
 
+    # Query 2: get the count of sightings for the bird being searched
     query2 = (db.checklists.observer_id == observer_id)
-    row2 = db(
-        query2 & (db.checklists.event_id == db.sightings.event_id) & (db.sightings.count != '')
-    ).select(
+    
+    if bird_name:
+        query2 &= (db.sightings.name.contains(bird_name)) & (db.sightings.count != '')
+
+    query2 &= (db.checklists.event_id == db.sightings.event_id)
+    
+    row2 = db(query2).select(
         db.sightings.event_id,
         db.sightings.count.count().with_alias("count"),
         groupby=db.sightings.event_id
     ).as_list()
-    
+
     bird_count_dict = {item['sightings']['event_id']: item['count'] for item in row2}
 
     return dict(checklist=rows, bird_count=bird_count_dict)

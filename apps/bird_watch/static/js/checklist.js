@@ -23,9 +23,21 @@ app.data = {
             last_page: false,
             total_items: null,
             total_pages: null,
+            time: null,
         };
     },
     methods: {
+        format_time: function(time) {
+            let hours = Math.floor(time / 60);
+            let minutes = time % 60;
+            let seconds = 0;
+            return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        },
+        index_redirect: function() {
+            axios.get(handle_redirect_index_url, {}).then(function (r) {
+                window.location.href = r.data.url;
+            });
+        },
         stats_redirect: function () {
             axios.get(handle_redirect_stats_url, {}).then(function (r) {
                 window.location.href = r.data.url;
@@ -130,6 +142,20 @@ app.data = {
             }).then(function (r) {
                 self.checklist = r.data.checklist;
                 self.bird_count = r.data.bird_count;
+                self.total_items = r.data.checklist.length;
+                self.total_pages = Math.ceil(self.total_items / self.items_per_page);
+                // handle case where there's only one page
+                if (self.total_pages <= 1) {
+                    self.first_page = true;
+                    self.last_page = true;
+                } else {
+                    self.first_page = true
+                    self.last_page = false
+                }
+        
+                const start = (self.page_number - 1) * self.items_per_page;
+                const end = self.page_number * self.items_per_page;
+                self.selected_checklist = r.data.checklist.slice(start, end);
             });
 
         },
