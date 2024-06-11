@@ -7,9 +7,12 @@ import csv
 from .common import db, Field, auth
 from pydal.validators import *
 import random
+import os
 
 
-path="/Users/shaun/Desktop/CSE 183/cse183-project/apps/bird_watch/sample_data/"
+
+path = "apps/bird_watch/sample_data/"
+
 
 def get_user_email():
     return auth.current_user.get('email') if auth.current_user else None
